@@ -64,16 +64,8 @@ export const ContentApp = () => {
   );
 };
 
-// Create a new div as an extension root
-const extensionRoot = document.createElement("div");
-document.body.appendChild(extensionRoot);
+// Create a new div and attach it to the DOM
+const root = document.createElement("div");
+document.body.appendChild(root);
 
-// Create a shadow root
-const shadowRoot = extensionRoot.attachShadow({ mode: "open" });
-
-// Now we create a mount point in the Shadow DOM
-const reactRoot = document.createElement("div");
-shadowRoot.appendChild(reactRoot);
-
-// Render React App inside our shadow root within the mount point.
-ReactDOM.render(<ContentApp />, reactRoot);
+ReactDOM.render(<ContentApp />, root);
