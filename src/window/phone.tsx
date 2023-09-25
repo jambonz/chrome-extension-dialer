@@ -212,14 +212,16 @@ export const Phone = ({
               <strong>Status:</strong> {status}
             </Text>
             <Spacer />
-            <Button
-              size="sm"
-              onClick={handleGoOffline}
-              colorScheme={DEFAULT_COLOR_SCHEME}
-              ml={5}
-            >
-              {goOffline ? "Go online" : "Go offline"}
-            </Button>
+            {isSipClientIdle(callStatus) && (
+              <Button
+                size="sm"
+                onClick={handleGoOffline}
+                colorScheme={DEFAULT_COLOR_SCHEME}
+                ml={5}
+              >
+                {goOffline ? "Go online" : "Go offline"}
+              </Button>
+            )}
           </Flex>
         </VStack>
       ) : (

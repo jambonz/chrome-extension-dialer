@@ -77,13 +77,15 @@ export const OutgoingCall = ({
         <Button w="full" colorScheme={DEFAULT_COLOR_SCHEME} onClick={hangup}>
           Hang up
         </Button>
-        <Button
-          w="full"
-          colorScheme={DEFAULT_COLOR_SCHEME}
-          onClick={callOnHold}
-        >
-          {callHold ? "Unhold " : "Place call on hold"}
-        </Button>
+        {isSipClientAnswered(callStatus) && (
+          <Button
+            w="full"
+            colorScheme={DEFAULT_COLOR_SCHEME}
+            onClick={callOnHold}
+          >
+            {callHold ? "Unhold " : "Place call on hold"}
+          </Button>
+        )}
       </VStack>
     </VStack>
   );
