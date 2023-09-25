@@ -6,6 +6,7 @@ module.exports = [
   {
     entry: "./src/content/index.tsx",
     target: "web",
+    mode: "production",
     output: {
       path: path.join(__dirname, "dist"),
       filename: "js/content.js",
@@ -27,7 +28,7 @@ module.exports = [
       ],
     },
     resolve: {
-      extensions: [".ts", ".js"],
+      extensions: [".ts", ".tsx",".js"],
     },
   },
   {

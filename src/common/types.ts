@@ -11,10 +11,8 @@ export interface Call {
 
 export enum MessageEvent {
   // Request
-  Login,
   Call,
   OpenPhoneWindow,
-  Ping,
 }
 
 export interface EmptyData {}

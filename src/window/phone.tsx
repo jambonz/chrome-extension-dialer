@@ -15,7 +15,7 @@ import {
 import { useEffect, useRef, useState } from "react";
 import { Delete } from "react-feather";
 import { DEFAULT_COLOR_SCHEME } from "src/common/constants";
-import { SipClientStatus } from "src/common/types";
+import { Call, Message, MessageEvent, SipClientStatus } from "src/common/types";
 import { SipConstants, SipUA } from "src/lib";
 import IncommingCall from "./incomming-call";
 import OutgoingCall from "./outgoing-call";
@@ -24,6 +24,7 @@ import {
   isSipClientAnswered,
   isSipClientIdle,
   isSipClientRinging,
+  openPhonePopup,
 } from "src/utils";
 
 type PhoneProbs = {
@@ -55,6 +56,28 @@ export const Phone = ({
       createSipClient();
     }
   }, [sipDomain, sipUsername, sipPassword, sipServerAddress, sipDisplayName]);
+
+  useEffect(() => {
+    chrome.runtime.onMessage.addListener(function (request) {
+      const msg = request as Message<any>;
+      switch (msg.event) {
+        case MessageEvent.Call:
+          handleCallEvent(msg.data as Call);
+          break;
+        default:
+          break;
+      }
+    });
+  }, []);
+
+  const handleCallEvent = (call: Call) => {
+    if (!call.number) return;
+
+    if (isSipClientIdle(callStatus)) {
+      setInputNumber(call.number);
+      sipUA.current?.call(call.number);
+    }
+  };
 
   const createSipClient = (forceOfflineMode = false) => {
     if (goOffline && !forceOfflineMode) {

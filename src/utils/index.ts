@@ -1,4 +1,4 @@
-import { SipConstants } from "src/lib";
+import { SipConstants } from "./../lib";
 import { deleteWindowIdKey, getWindowIdKey, saveWindowIdKey } from "./storage";
 import { PhoneNumberFormat, PhoneNumberUtil } from "google-libphonenumber";
 
@@ -13,20 +13,23 @@ export const formatPhoneNumber = (number: string) => {
 };
 
 export const openPhonePopup = () => {
-  const runningPhoneWindowId = getWindowIdKey();
-  if (runningPhoneWindowId) {
-    chrome.windows.update(runningPhoneWindowId, { focused: true }, () => {
-      if (chrome.runtime.lastError) {
-        deleteWindowIdKey();
-        initiateNewPhonePopup();
-      }
-    });
-  } else {
-    initiateNewPhonePopup();
-  }
+  return new Promise((resolve) => {
+    const runningPhoneWindowId = getWindowIdKey();
+    if (runningPhoneWindowId) {
+      chrome.windows.update(runningPhoneWindowId, { focused: true }, () => {
+        if (chrome.runtime.lastError) {
+          deleteWindowIdKey();
+          initiateNewPhonePopup(resolve);
+        }
+        resolve(1);
+      });
+    } else {
+      initiateNewPhonePopup(resolve);
+    }
+  });
 };
 
-const initiateNewPhonePopup = () => {
+const initiateNewPhonePopup = (callback: (v: unknown) => void) => {
   const cfg: chrome.windows.CreateData = {
     url: chrome.runtime.getURL("window/index.html"),
     width: 300,
@@ -36,6 +39,7 @@ const initiateNewPhonePopup = () => {
     state: "normal",
   };
   chrome.windows.create(cfg, (w) => {
+    callback(1);
     if (w && w.id) saveWindowIdKey(w.id);
   });
 };

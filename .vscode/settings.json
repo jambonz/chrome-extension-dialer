@@ -1,0 +1,9 @@
+{
+  "editor.tabSize": 2,
+  "editor.detectIndentation": false,
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "prettier.configPath": ".prettierrc.json",
+  "files.trimTrailingWhitespace": true,
+  "typescript.preferences.quoteStyle": "double"
+}
