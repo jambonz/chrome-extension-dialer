@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom";
 import { Call, CallAction, Message, MessageEvent } from "./../common/types";
-import { openPhonePopup } from "./../utils";
 
 export const ContentApp = () => {
   const [selectedText, setSelectedText] = useState("");
-  const [counting, setCounting] = useState(0);
   const [position, setPosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {

@@ -28,7 +28,7 @@ module.exports = [
       ],
     },
     resolve: {
-      extensions: [".ts", ".tsx",".js"],
+      extensions: [".ts", ".tsx", ".js"],
     },
   },
   {
@@ -67,18 +67,14 @@ module.exports = [
           ],
         },
         {
-          test: /\.(png|jpe?g|gif|svg)$/i,
-          use: [
-            {
-              loader: "file-loader",
-            },
-          ],
+          test: /\.txt$/i,
+          type: "asset/source",
         },
       ],
     },
     plugins: [
       new CopyPlugin({
-        patterns: [{ from: "manifest.json", to: "../manifest.json" }],
+        patterns: [{ from: "public", to: ".." }],
       }),
       ...getHtmlPlugins(["index"]),
     ],
@@ -86,7 +82,7 @@ module.exports = [
       alias: {
         src: path.resolve(__dirname, "src/"),
       },
-      extensions: [".tsx", ".ts", ".js"],
+      extensions: [".tsx", ".ts", ".js", ".txt"],
     },
     output: {
       path: path.join(__dirname, "dist/js"),
@@ -142,12 +138,7 @@ module.exports = [
         },
       ],
     },
-    plugins: [
-      new CopyPlugin({
-        patterns: [{ from: "manifest.json", to: "../manifest.json" }],
-      }),
-      ...getHtmlPlugins(["index"]),
-    ],
+    plugins: [...getHtmlPlugins(["index"])],
     resolve: {
       alias: {
         src: path.resolve(__dirname, "src/"),
