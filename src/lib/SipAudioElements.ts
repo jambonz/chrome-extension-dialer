@@ -1,10 +1,3 @@
-const ringingURL: string =
-  "https://vibe-public.s3.eu-west-1.amazonaws.com/Tone-Telephone-UK-Ring+Tone-Loop.mp3";
-const failedURL: string =
-  "https://vibe-public.s3.eu-west-1.amazonaws.com/windows-error-sound-effect-35894.mp3";
-const answeredURL: string =
-  "https://vibe-public.s3.eu-west-1.amazonaws.com/lazer-96499.mp3";
-
 export default class SipAudioElements {
   #ringing: HTMLAudioElement;
   #failed: HTMLAudioElement;
@@ -17,8 +10,7 @@ export default class SipAudioElements {
     this.#ringing.volume = 0.8;
     this.#failed = new Audio(chrome.runtime.getURL("audios/failed.mp3"));
     this.#failed.volume = 0.3;
-    this.#answer = new Audio();
-    this.#answer.src = answeredURL;
+    this.#answer = new Audio(chrome.runtime.getURL("audios/failed.mp3"));
     this.#answer.volume = 0.3;
     this.#remote = new Audio();
   }
