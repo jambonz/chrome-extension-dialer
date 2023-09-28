@@ -7,11 +7,5 @@
     "default_popup": "js/index.html",
     "default_title": "Webrtc Chrome Extension"
   },
-  "content_scripts": [
-    {
-      "matches": ["<all_urls>"],
-      "js": ["js/content.js"]
-    }
-  ],
   "permissions": ["activeTab", "storage"]
 }
