@@ -135,6 +135,14 @@ export default class SipUA extends events.EventEmitter {
     });
   }
 
+  isMuted(id: string | undefined): boolean {
+    if (id) {
+      return this.#sessionManager.getSession(id).isMuted();
+    } else {
+      return this.#sessionManager.activeSession.isMuted();
+    }
+  }
+
   mute(id: string | undefined): void {
     if (id) {
       this.#sessionManager.getSession(id).mute();
@@ -148,6 +156,14 @@ export default class SipUA extends events.EventEmitter {
       this.#sessionManager.getSession(id).unmute();
     } else {
       this.#sessionManager.activeSession.unmute();
+    }
+  }
+
+  isHolded(id: string | undefined): boolean {
+    if (id) {
+      return this.#sessionManager.getSession(id).isHolded();
+    } else {
+      return this.#sessionManager.activeSession.isHolded();
     }
   }
 

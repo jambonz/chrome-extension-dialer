@@ -16,14 +16,14 @@ export const App = () => {
       padding="20px"
       alignItems="center"
     >
-      <Text fontSize="xl" mb={5}>
+      <Text fontSize="24px" mb={5}>
         Click 'Start' to activate the service.
       </Text>
       <Button
         size="lg"
         width="full"
         onClick={handleClick}
-        colorScheme={DEFAULT_COLOR_SCHEME}
+        colorScheme="jambonz"
       >
         Start
       </Button>

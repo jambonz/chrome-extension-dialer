@@ -32,8 +32,8 @@ export const openPhonePopup = () => {
 const initiateNewPhonePopup = (callback: (v: unknown) => void) => {
   const cfg: chrome.windows.CreateData = {
     url: chrome.runtime.getURL("window/index.html"),
-    width: 300,
-    height: 630,
+    width: 440,
+    height: 720,
     focused: true,
     type: "panel",
     state: "normal",
