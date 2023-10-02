@@ -30,7 +30,7 @@ export const WindowApp = () => {
   const [callHistories, setCallHistories] = useState<CallHistory[]>([]);
   const tabsSettings = [
     {
-      title: "Phone",
+      title: "Dialer",
       content: (
         <Phone
           sipUsername={sipUsername}
@@ -42,7 +42,7 @@ export const WindowApp = () => {
       ),
     },
     {
-      title: "Recent",
+      title: "History",
       content: <CallHistories calls={callHistories} />,
     },
     {
