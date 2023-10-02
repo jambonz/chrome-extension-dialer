@@ -27,20 +27,6 @@ export interface Contact {
   number: string;
 }
 
-export interface CallHistory {
-  id: string;
-  callerName?: string;
-  callerId: string;
-  direction: string;
-  time: string;
-  duration: number;
-  strDuration?: string;
-  startTime?: number;
-  endTime?: number;
-  label?: string;
-  note: string;
-}
-
 export interface MessageResponse<T> {
   event: MessageEvent;
   code: number;
@@ -72,4 +58,12 @@ export interface AppSettings {
   apiKey: string;
 }
 
+export interface CallHistory {
+  direction: SipCallDirection;
+  number: string;
+  duration: string;
+  timeStamp: number;
+}
+
 export type SipClientStatus = "online" | "offline";
+export type SipCallDirection = "" | "outgoing" | "incoming";

@@ -264,12 +264,20 @@ export default class SipSession extends events.EventEmitter {
     });
   }
 
+  isMuted(): boolean {
+    return this.#rtcSession.isMuted().audio?.valueOf() || false;
+  }
+
   mute(): void {
     this.#rtcSession.mute({ audio: true, video: true });
   }
 
   unmute(): void {
     this.#rtcSession.unmute({ audio: true, video: true });
+  }
+
+  isHolded(): boolean {
+    return this.#rtcSession.isOnHold().local.valueOf() || false;
   }
 
   hold(): void {
