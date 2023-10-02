@@ -34,7 +34,12 @@ import {
 import Avatar from "src/imgs/icons/Avatar.svg";
 import GreenAvatar from "src/imgs/icons/Avatar-Green.svg";
 import "./styles.scss";
-import { getCurrentCall, saveCallHistory, saveCurrentCall } from "src/storage";
+import {
+  deleteCurrentCall,
+  getCurrentCall,
+  saveCallHistory,
+  saveCurrentCall,
+} from "src/storage";
 import dayjs from "dayjs";
 
 type PhoneProbs = {
@@ -192,6 +197,7 @@ export const Phone = ({
         timeStamp: call.timeStamp,
       });
     }
+    deleteCurrentCall();
   };
 
   const handleDialPadClick = (value: string) => {
