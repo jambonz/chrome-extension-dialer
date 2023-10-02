@@ -90,7 +90,7 @@ export const WindowApp = () => {
           colorScheme={DEFAULT_COLOR_SCHEME}
           onChange={onTabsChange}
         >
-          <TabList mb="1em">
+          <TabList mb="1em" gap={1}>
             {tabsSettings.map((s) => (
               <Tab
                 _selected={{ color: "white", bg: "jambonz.500" }}
