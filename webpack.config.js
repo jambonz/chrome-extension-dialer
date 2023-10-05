@@ -32,6 +32,34 @@ module.exports = [
     },
   },
   {
+    entry: "./src/background/index.ts",
+    target: "web",
+    mode: "production",
+    output: {
+      path: path.join(__dirname, "dist"),
+      filename: "background/index.js",
+    },
+    module: {
+      rules: [
+        {
+          test: /\.tsx?$/,
+          use: [
+            {
+              loader: "ts-loader",
+              options: {
+                compilerOptions: { noEmit: false },
+              },
+            },
+          ],
+          exclude: /node_modules/,
+        },
+      ],
+    },
+    resolve: {
+      extensions: [".ts", ".tsx", ".js"],
+    },
+  },
+  {
     entry: {
       index: "./src/index.tsx",
     },
