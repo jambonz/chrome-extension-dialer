@@ -2,7 +2,6 @@ import React from "react";
 import "./styles.scss";
 import { Button, Flex, Text } from "@chakra-ui/react";
 import { openPhonePopup } from "./utils";
-import { DEFAULT_COLOR_SCHEME } from "./common/constants";
 export const App = () => {
   const handleClick = () => {
     openPhonePopup();
