@@ -184,7 +184,7 @@ function getHtmlPlugins(chunks) {
   return chunks.map(
     (chunk) =>
       new HTMLPlugin({
-        title: "Webrtc Chrome Extension",
+        title: "Jambonz Webrtc Client",
         filename: `${chunk}.html`,
         chunks: [chunk],
       })
