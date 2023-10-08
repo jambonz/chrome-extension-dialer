@@ -70,6 +70,9 @@ export const Phone = ({
   const timerRef = useRef<NodeJS.Timer | null>(null);
   const [seconds, setSeconds] = useState(0);
   const secondsRef = useRef(seconds);
+  const [isStatusDropdownDisabled, setIsStatusDropdownDisabled] =
+    useState(false);
+  const [isCallButtonLoading, setIsCallButtonLoading] = useState(false);
 
   useEffect(() => {
     if (sipDomain && sipUsername && sipPassword) {
@@ -83,6 +86,18 @@ export const Phone = ({
     sessionDirectionRef.current = sessionDirection;
     secondsRef.current = seconds;
   }, [inputNumber, seconds, sessionDirection]);
+
+  useEffect(() => {
+    if (isStatusDropdownDisabled) {
+      setIsStatusDropdownDisabled(false);
+    }
+  }, [status]);
+
+  useEffect(() => {
+    if (isSipClientIdle(callStatus) && isCallButtonLoading) {
+      setIsCallButtonLoading(false);
+    }
+  }, [callStatus]);
 
   useEffect(() => {
     chrome.runtime.onMessage.addListener(function (request) {
@@ -101,6 +116,7 @@ export const Phone = ({
     if (!call.number) return;
 
     if (isSipClientIdle(callStatus)) {
+      setIsCallButtonLoading(true);
       setInputNumber(call.number);
       sipUA.current?.call(call.number);
     }
@@ -206,6 +222,7 @@ export const Phone = ({
 
   const handleCallButtion = () => {
     if (sipUA.current) {
+      setIsCallButtonLoading(true);
       sipUA.current.call(inputNumber);
     }
   };
@@ -217,7 +234,7 @@ export const Phone = ({
     }
   };
 
-  const handleGoOffline = (s: string) => {
+  const handleGoOffline = (s: SipClientStatus) => {
     if (s === status) {
       return;
     }
@@ -287,7 +304,11 @@ export const Phone = ({
                   variant="unstyled"
                   w="auto"
                   value={status}
-                  onChange={(e) => handleGoOffline(e.target.value)}
+                  onChange={(e) => {
+                    setIsStatusDropdownDisabled(true);
+                    handleGoOffline(e.target.value as SipClientStatus);
+                  }}
+                  isDisabled={isStatusDropdownDisabled}
                 >
                   <option value="online">Online</option>
                   <option value="offline">Offline</option>
@@ -349,6 +370,7 @@ export const Phone = ({
               isDisabled={status === "offline"}
               colorScheme="jambonz"
               alignContent="center"
+              isLoading={isCallButtonLoading}
             >
               Call
             </Button>
