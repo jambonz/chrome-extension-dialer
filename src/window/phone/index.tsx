@@ -7,6 +7,7 @@ import {
   IconButton,
   Image,
   Input,
+  Select,
   Spacer,
   Text,
   Tooltip,
@@ -60,7 +61,6 @@ export const Phone = ({
   const [inputNumber, setInputNumber] = useState("");
   const inputNumberRef = useRef(inputNumber);
   const [status, setStatus] = useState<SipClientStatus>("offline");
-  const [goOffline, setGoOffline] = useState(false);
   const [isConfigured, setIsConfigured] = useState(false);
   const [callStatus, setCallStatus] = useState(SipConstants.SESSION_ENDED);
   const [sessionDirection, setSessionDirection] =
@@ -70,6 +70,9 @@ export const Phone = ({
   const timerRef = useRef<NodeJS.Timer | null>(null);
   const [seconds, setSeconds] = useState(0);
   const secondsRef = useRef(seconds);
+  const [isStatusDropdownDisabled, setIsStatusDropdownDisabled] =
+    useState(false);
+  const [isCallButtonLoading, setIsCallButtonLoading] = useState(false);
 
   useEffect(() => {
     if (sipDomain && sipUsername && sipPassword) {
@@ -83,6 +86,18 @@ export const Phone = ({
     sessionDirectionRef.current = sessionDirection;
     secondsRef.current = seconds;
   }, [inputNumber, seconds, sessionDirection]);
+
+  useEffect(() => {
+    if (isStatusDropdownDisabled) {
+      setIsStatusDropdownDisabled(false);
+    }
+  }, [status]);
+
+  useEffect(() => {
+    if (isSipClientIdle(callStatus) && isCallButtonLoading) {
+      setIsCallButtonLoading(false);
+    }
+  }, [callStatus]);
 
   useEffect(() => {
     chrome.runtime.onMessage.addListener(function (request) {
@@ -101,6 +116,7 @@ export const Phone = ({
     if (!call.number) return;
 
     if (isSipClientIdle(callStatus)) {
+      setIsCallButtonLoading(true);
       setInputNumber(call.number);
       sipUA.current?.call(call.number);
     }
@@ -121,11 +137,7 @@ export const Phone = ({
     }
   };
 
-  const createSipClient = (forceOfflineMode = false) => {
-    if (goOffline && !forceOfflineMode) {
-      return;
-    }
-
+  const createSipClient = () => {
     clientGoOffline();
 
     const client = {
@@ -210,6 +222,7 @@ export const Phone = ({
 
   const handleCallButtion = () => {
     if (sipUA.current) {
+      setIsCallButtonLoading(true);
       sipUA.current.call(inputNumber);
     }
   };
@@ -221,13 +234,14 @@ export const Phone = ({
     }
   };
 
-  const handleGoOffline = () => {
-    const newVal = !goOffline;
-    setGoOffline(newVal);
-    if (newVal) {
+  const handleGoOffline = (s: SipClientStatus) => {
+    if (s === status) {
+      return;
+    }
+    if (s === "offline") {
       clientGoOffline();
     } else {
-      createSipClient(true);
+      createSipClient();
     }
   };
 
@@ -279,31 +293,31 @@ export const Phone = ({
         <>
           <HStack spacing={2} boxShadow="md" w="full" p={2} borderRadius={5}>
             <Image src={isOnline() ? GreenAvatar : Avatar} />
-            <VStack spacing={2} alignItems="start">
-              <HStack spacing={2}>
+            <VStack spacing={2} alignItems="start" w="full">
+              <HStack spacing={2} w="full">
                 <Text fontWeight="bold" fontSize="13px">
                   {sipDisplayName ?? sipUsername}
                 </Text>
                 <Circle size="8px" bg={isOnline() ? "green.500" : "gray.500"} />
-                <Text fontSize="13px">{isOnline() ? "Online" : "Offline"}</Text>
+                <Select
+                  borderRadius="full"
+                  variant="unstyled"
+                  w="auto"
+                  value={status}
+                  onChange={(e) => {
+                    setIsStatusDropdownDisabled(true);
+                    handleGoOffline(e.target.value as SipClientStatus);
+                  }}
+                  isDisabled={isStatusDropdownDisabled}
+                >
+                  <option value="online">Online</option>
+                  <option value="offline">Offline</option>
+                </Select>
               </HStack>
               <Text fontWeight="bold" w="full">
                 {`${sipUsername}@${sipDomain}`}
               </Text>
             </VStack>
-            {isSipClientIdle(callStatus) && (
-              <>
-                <Spacer />
-                <Button
-                  variant={isOnline() ? "outline" : "solid"}
-                  borderRadius="50px 50px 50px 50px"
-                  colorScheme={isOnline() ? "gray" : "jambonz"}
-                  onClick={handleGoOffline}
-                >
-                  {isOnline() ? "GO OFFLINE" : "GO ONLINE"}
-                </Button>
-              </>
-            )}
           </HStack>
         </>
       ) : (
@@ -356,6 +370,7 @@ export const Phone = ({
               isDisabled={status === "offline"}
               colorScheme="jambonz"
               alignContent="center"
+              isLoading={isCallButtonLoading}
             >
               Call
             </Button>
