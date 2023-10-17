@@ -10,10 +10,11 @@ import {
   Spacer,
   UnorderedList,
 } from "@chakra-ui/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Search, Sliders } from "react-feather";
 import { CallHistory } from "src/common/types";
 import CallHistoryItem from "./call-history-item";
+import Fuse from "fuse.js";
 
 type CallHistoriesProbs = {
   calls: CallHistory[];
@@ -21,6 +22,25 @@ type CallHistoriesProbs = {
 
 export const CallHistories = ({ calls }: CallHistoriesProbs) => {
   const [searchText, setSearchText] = useState("");
+  const [callHistories, setCallHistories] = useState<CallHistory[]>(calls);
+
+  useEffect(() => {
+    if (searchText) {
+      setCallHistories(
+        new Fuse(calls, {
+          keys: ["number"],
+        })
+          .search(searchText)
+          .map(({ item }) => item)
+      );
+    } else {
+      setCallHistories(calls);
+    }
+  }, [searchText]);
+
+  useEffect(() => {
+    setCallHistories(calls);
+  }, [calls]);
 
   return (
     <VStack spacing={2}>
@@ -46,7 +66,7 @@ export const CallHistories = ({ calls }: CallHistoriesProbs) => {
           </Text>
         </HStack>
       </Grid>
-      {calls.length > 0 ? (
+      {callHistories.length > 0 ? (
         <UnorderedList
           w="full"
           spacing={2}
@@ -54,7 +74,7 @@ export const CallHistories = ({ calls }: CallHistoriesProbs) => {
           overflowY="auto"
           mt={2}
         >
-          {calls.map((c) => (
+          {callHistories.map((c) => (
             <CallHistoryItem call={c} />
           ))}
         </UnorderedList>

@@ -27,6 +27,9 @@ export const DialPad = ({ handleDigitPress }: DialPadProbs) => {
                 height="70px"
                 variant="unstyled"
                 bg="white"
+                _hover={{
+                  bg: "gray.100",
+                }}
                 borderRadius={0}
               >
                 {num}
