@@ -9,6 +9,7 @@
     "@testing-library/user-event": "^13.5.0",
     "buffer": "^6.0.3",
     "dayjs": "^1.11.10",
+    "fuse.js": "^6.6.2",
     "google-libphonenumber": "^3.2.33",
     "jssip": "^3.2.17",
     "react": "^18.2.0",

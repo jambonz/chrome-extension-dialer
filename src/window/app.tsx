@@ -62,24 +62,11 @@ export const WindowApp = () => {
 
   const loadSettings = () => {
     const settings = getSettings();
-    if (settings.sipDomain && settings.sipDomain !== sipDomain) {
-      setSipDomain(settings.sipDomain);
-    }
-    if (
-      settings.sipServerAddress &&
-      settings.sipServerAddress !== sipServerAddress
-    ) {
-      setSipServerAddress(settings.sipServerAddress);
-    }
-    if (settings.sipUsername && settings.sipUsername !== sipUsername) {
-      setSipUsername(settings.sipUsername);
-    }
-    if (settings.sipPassword && settings.sipPassword !== sipPassword) {
-      setSipPassword(settings.sipPassword);
-    }
-    if (settings.sipDisplayName && settings.sipDisplayName !== sipDisplayName) {
-      setSipDisplayName(settings.sipDisplayName);
-    }
+    setSipDomain(settings.sipDomain);
+    setSipServerAddress(settings.sipServerAddress);
+    setSipUsername(settings.sipUsername);
+    setSipPassword(settings.sipPassword);
+    setSipDisplayName(settings.sipDisplayName);
   };
   return (
     <Grid h="100vh" templateRows="1fr auto">

@@ -23,9 +23,7 @@ import ResetIcon from "src/imgs/icons/Reset.svg";
 
 export const Settings = () => {
   const [sipDomain, setSipDomain] = useState("");
-  const [sipServerAddress, setSipServerAddress] = useState(
-    "wss://sip.jambonz.cloud:8443/"
-  );
+  const [sipServerAddress, setSipServerAddress] = useState("");
   const [sipUsername, setSipUsername] = useState("");
   const [sipPassword, setSipPassword] = useState("");
   const [sipDisplayName, setSipDisplayName] = useState("");
@@ -103,7 +101,7 @@ export const Settings = () => {
           <FormLabel>Jambonz Server Address</FormLabel>
           <Input
             type="text"
-            placeholder="Server address"
+            placeholder="wss://sip.jambonz.cloud:8443/"
             isRequired
             value={sipServerAddress}
             onChange={(e) => setSipServerAddress(e.target.value)}

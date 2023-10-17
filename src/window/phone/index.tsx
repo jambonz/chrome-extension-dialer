@@ -41,7 +41,7 @@ import {
   saveCallHistory,
   saveCurrentCall,
 } from "src/storage";
-import dayjs from "dayjs";
+import { OutGoingCall } from "./outgoing-call";
 
 type PhoneProbs = {
   sipDomain: string;
@@ -75,9 +75,12 @@ export const Phone = ({
   const [isCallButtonLoading, setIsCallButtonLoading] = useState(false);
 
   useEffect(() => {
-    if (sipDomain && sipUsername && sipPassword) {
+    if (sipDomain && sipUsername && sipPassword && sipServerAddress) {
       createSipClient();
       setIsConfigured(true);
+    } else {
+      setIsConfigured(false);
+      clientGoOffline();
     }
   }, [sipDomain, sipUsername, sipPassword, sipServerAddress, sipDisplayName]);
 
@@ -99,18 +102,18 @@ export const Phone = ({
     }
   }, [callStatus]);
 
-  useEffect(() => {
-    chrome.runtime.onMessage.addListener(function (request) {
-      const msg = request as Message<any>;
-      switch (msg.event) {
-        case MessageEvent.Call:
-          handleCallEvent(msg.data as Call);
-          break;
-        default:
-          break;
-      }
-    });
-  }, []);
+  // useEffect(() => {
+  //   chrome.runtime.onMessage.addListener(function (request) {
+  //     const msg = request as Message<any>;
+  //     switch (msg.event) {
+  //       case MessageEvent.Call:
+  //         handleCallEvent(msg.data as Call);
+  //         break;
+  //       default:
+  //         break;
+  //     }
+  //   });
+  // }, []);
 
   const handleCallEvent = (call: Call) => {
     if (!call.number) return;
@@ -166,17 +169,24 @@ export const Phone = ({
     });
     // Call Status
     sipClient.on(SipConstants.SESSION_RINGING, (args) => {
-      saveCurrentCall({
-        number: args.session.user,
-        direction: args.session.direction,
-        timeStamp: Date.now(),
-        duration: "0",
-      });
+      if (args.session.direction === "incoming") {
+        saveCurrentCall({
+          number: args.session.user,
+          direction: args.session.direction,
+          timeStamp: Date.now(),
+          duration: "0",
+        });
+      }
       setCallStatus(SipConstants.SESSION_RINGING);
       setSessionDirection(args.session.direction);
       setInputNumber(args.session.user);
     });
     sipClient.on(SipConstants.SESSION_ANSWERED, (args) => {
+      const currentCall = getCurrentCall();
+      if (currentCall) {
+        currentCall.timeStamp = Date.now();
+        saveCurrentCall(currentCall);
+      }
       setCallStatus(SipConstants.SESSION_ANSWERED);
       startCallDurationCounter();
     });
@@ -203,14 +213,27 @@ export const Phone = ({
       saveCallHistory(sipUsername, {
         number: call.number,
         direction: call.direction,
-        duration: new Date((Date.now() - call.timeStamp) / 1000)
-          .toISOString()
-          .substr(11, 8),
+        duration: transform(Date.now(), call.timeStamp),
         timeStamp: call.timeStamp,
       });
     }
     deleteCurrentCall();
   };
+
+  function transform(t1: number, t2: number) {
+    const diff = Math.abs(t1 - t2) / 1000; // Get the difference in seconds
+
+    const hours = Math.floor(diff / 3600);
+    const minutes = Math.floor((diff % 3600) / 60);
+    const seconds = Math.floor(diff % 60);
+
+    // Pad the values with a leading zero if they are less than 10
+    const hours1 = hours < 10 ? "0" + hours : hours;
+    const minutes1 = minutes < 10 ? "0" + minutes : minutes;
+    const seconds1 = seconds < 10 ? "0" + seconds : seconds;
+
+    return `${hours1}:${minutes1}:${seconds1}`;
+  }
 
   const handleDialPadClick = (value: string) => {
     if (isSipClientIdle(callStatus)) {
@@ -221,8 +244,16 @@ export const Phone = ({
   };
 
   const handleCallButtion = () => {
-    if (sipUA.current) {
+    if (sipUA.current && inputNumber) {
       setIsCallButtonLoading(true);
+      setCallStatus(SipConstants.SESSION_RINGING);
+      setSessionDirection("outgoing");
+      saveCurrentCall({
+        number: inputNumber,
+        direction: "outgoing",
+        timeStamp: Date.now(),
+        duration: "0",
+      });
       sipUA.current.call(inputNumber);
     }
   };
@@ -326,12 +357,16 @@ export const Phone = ({
         </Heading>
       )}
 
-      {isSipClientRinging(callStatus) && sessionDirection === "incoming" ? (
-        <IncommingCall
-          number={inputNumber}
-          answer={handleAnswer}
-          decline={handleDecline}
-        />
+      {isSipClientRinging(callStatus) ? (
+        sessionDirection === "incoming" ? (
+          <IncommingCall
+            number={inputNumber}
+            answer={handleAnswer}
+            decline={handleDecline}
+          />
+        ) : (
+          <OutGoingCall number={inputNumber} cancelCall={handleDecline} />
+        )
       ) : (
         <VStack
           spacing={4}
