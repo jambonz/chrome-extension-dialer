@@ -59,10 +59,12 @@ export interface AppSettings {
 }
 
 export interface CallHistory {
+  callSid: string;
   direction: SipCallDirection;
   number: string;
   duration: string;
   timeStamp: number;
+  isSaved?: boolean;
 }
 
 export type SipClientStatus = "online" | "offline";

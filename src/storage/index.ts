@@ -41,6 +41,23 @@ export const saveCallHistory = (username: string, call: CallHistory) => {
   localStorage.setItem(`${username}_${historyKey}`, encoded);
 };
 
+export const isSaveCallHistory = (
+  username: string,
+  callSid: string,
+  isSaved: boolean
+) => {
+  const calls = getCallHistories(username).map((c) => {
+    if (c.callSid === callSid) {
+      return { ...c, isSaved };
+    } else {
+      return c;
+    }
+  });
+  const saveStr = JSON.stringify(calls);
+  const encoded = Buffer.from(saveStr, "utf-8").toString("base64");
+  localStorage.setItem(`${username}_${historyKey}`, encoded);
+};
+
 export const getCallHistories = (username: string): CallHistory[] => {
   const str = localStorage.getItem(`${username}_${historyKey}`);
   if (str) {

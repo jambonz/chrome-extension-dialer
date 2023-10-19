@@ -1,14 +1,31 @@
-import { HStack, Icon, Spacer, Text, VStack } from "@chakra-ui/react";
+import {
+  HStack,
+  Icon,
+  IconButton,
+  Spacer,
+  Text,
+  Tooltip,
+  VStack,
+} from "@chakra-ui/react";
 import dayjs from "dayjs";
-import { Phone, PhoneIncoming, PhoneOutgoing } from "react-feather";
+import { useState } from "react";
+import { Phone, PhoneIncoming, PhoneOutgoing, Save, Star } from "react-feather";
 import { CallHistory, SipCallDirection } from "src/common/types";
+import { getSettings, isSaveCallHistory } from "src/storage";
 import { formatPhoneNumber } from "src/utils";
 
 type CallHistoryItemProbs = {
   call: CallHistory;
+  onDataChange?: (call: CallHistory) => void;
+  onCallNumber?: (number: string) => void;
 };
 
-export const CallHistoryItem = ({ call }: CallHistoryItemProbs) => {
+export const CallHistoryItem = ({
+  call,
+  onDataChange,
+  onCallNumber,
+}: CallHistoryItemProbs) => {
+  const [callEnable, setCallEnable] = useState(false);
   const getDirectionIcon = (direction: SipCallDirection) => {
     if (direction === "outgoing") {
       return PhoneOutgoing;
@@ -18,12 +35,15 @@ export const CallHistoryItem = ({ call }: CallHistoryItemProbs) => {
       return Phone;
     }
   };
+
   return (
     <HStack
       spacing={5}
       borderBottomWidth="1px"
       borderBottomColor="gray.200"
       p={2}
+      onMouseEnter={() => setCallEnable(true)}
+      onMouseLeave={() => setCallEnable(false)}
     >
       <Icon as={getDirectionIcon(call.direction)} w="20px" h="20px" />
       <VStack align="start">
@@ -32,12 +52,50 @@ export const CallHistoryItem = ({ call }: CallHistoryItemProbs) => {
         </Text>
         <Text fontSize="12px">{call.duration}</Text>
       </VStack>
+      {callEnable && (
+        <Tooltip label="Call">
+          <IconButton
+            aria-label="call recents"
+            icon={<Phone />}
+            onClick={() => {
+              if (onCallNumber) {
+                onCallNumber(call.number);
+              }
+            }}
+            variant="unstyled"
+            size="sm"
+            color="green.500"
+          />
+        </Tooltip>
+      )}
       <Spacer />
       <VStack align="start">
         <Text fontSize="12px">
           {dayjs(call.timeStamp).format("MMM D, hh:mm A")}
         </Text>
       </VStack>
+      <Tooltip label="Save">
+        <IconButton
+          aria-label="save recents"
+          icon={<Save />}
+          onClick={() => {
+            const settings = getSettings();
+            if (settings.sipUsername) {
+              isSaveCallHistory(
+                settings.sipUsername,
+                call.callSid,
+                !call.isSaved
+              );
+              if (onDataChange) {
+                onDataChange(call);
+              }
+            }
+          }}
+          variant="unstyled"
+          size="sm"
+          color={call.isSaved ? "jambonz.500" : ""}
+        />
+      </Tooltip>
     </HStack>
   );
 };
