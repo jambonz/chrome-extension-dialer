@@ -28,6 +28,8 @@ export const WindowApp = () => {
   const [sipPassword, setSipPassword] = useState("");
   const [sipDisplayName, setSipDisplayName] = useState("");
   const [callHistories, setCallHistories] = useState<CallHistory[]>([]);
+  const [calledNumber, setCalledNumber] = useState("");
+  const [tabIndex, setTabIndex] = useState(0);
   const tabsSettings = [
     {
       title: "Dialer",
@@ -38,12 +40,22 @@ export const WindowApp = () => {
           sipDomain={sipDomain}
           sipDisplayName={sipDisplayName}
           sipServerAddress={sipServerAddress}
+          calledNumber={[calledNumber, setCalledNumber]}
         />
       ),
     },
     {
       title: "History",
-      content: <CallHistories calls={callHistories} />,
+      content: (
+        <CallHistories
+          calls={callHistories}
+          onDataChange={() => setCallHistories(getCallHistories(sipUsername))}
+          onCallNumber={(number) => {
+            setCalledNumber(number);
+            setTabIndex(0);
+          }}
+        />
+      ),
     },
     {
       title: "Settings",
@@ -55,8 +67,9 @@ export const WindowApp = () => {
     loadSettings();
   }, []);
 
-  const onTabsChange = () => {
+  const onTabsChange = (i: number) => {
     loadSettings();
+    setTabIndex(i);
     setCallHistories(getCallHistories(sipUsername));
   };
 
@@ -76,6 +89,7 @@ export const WindowApp = () => {
           variant="enclosed"
           colorScheme={DEFAULT_COLOR_SCHEME}
           onChange={onTabsChange}
+          index={tabIndex}
         >
           <TabList mb="1em" gap={1}>
             {tabsSettings.map((s) => (

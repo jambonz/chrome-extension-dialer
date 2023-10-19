@@ -9,41 +9,40 @@ import {
   Text,
   Spacer,
   UnorderedList,
+  Tabs,
+  TabList,
+  Tab,
+  TabPanels,
+  TabPanel,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { Search, Sliders } from "react-feather";
 import { CallHistory } from "src/common/types";
 import CallHistoryItem from "./call-history-item";
-import Fuse from "fuse.js";
+
+import { DEFAULT_COLOR_SCHEME } from "src/common/constants";
+import Recents from "./recent";
 
 type CallHistoriesProbs = {
   calls: CallHistory[];
+  onDataChange?: (call: CallHistory) => void;
+  onCallNumber?: (number: string) => void;
 };
 
-export const CallHistories = ({ calls }: CallHistoriesProbs) => {
+export const CallHistories = ({
+  calls,
+  onDataChange,
+  onCallNumber,
+}: CallHistoriesProbs) => {
   const [searchText, setSearchText] = useState("");
-  const [callHistories, setCallHistories] = useState<CallHistory[]>(calls);
-
-  useEffect(() => {
-    if (searchText) {
-      setCallHistories(
-        new Fuse(calls, {
-          keys: ["number"],
-        })
-          .search(searchText)
-          .map(({ item }) => item)
-      );
-    } else {
-      setCallHistories(calls);
-    }
-  }, [searchText]);
-
-  useEffect(() => {
-    setCallHistories(calls);
-  }, [calls]);
 
   return (
-    <VStack spacing={2}>
+    <Tabs isFitted colorScheme={DEFAULT_COLOR_SCHEME}>
+      <TabList mb="1em" gap={1}>
+        <Tab>Saved</Tab>
+        <Tab>Recent</Tab>
+      </TabList>
+
       <Grid w="full" templateColumns="1fr auto" gap={5}>
         <InputGroup size="md">
           <Input
@@ -66,24 +65,27 @@ export const CallHistories = ({ calls }: CallHistoriesProbs) => {
           </Text>
         </HStack>
       </Grid>
-      {callHistories.length > 0 ? (
-        <UnorderedList
-          w="full"
-          spacing={2}
-          maxH="500px"
-          overflowY="auto"
-          mt={2}
-        >
-          {callHistories.map((c) => (
-            <CallHistoryItem call={c} />
-          ))}
-        </UnorderedList>
-      ) : (
-        <Text fontSize="24px" fontWeight="bold">
-          No Call History
-        </Text>
-      )}
-    </VStack>
+
+      <TabPanels mt={1}>
+        <TabPanel p={0}>
+          <Recents
+            calls={calls}
+            search={searchText}
+            isSaved
+            onCallNumber={onCallNumber}
+            onDataChange={onDataChange}
+          />
+        </TabPanel>
+        <TabPanel p={0}>
+          <Recents
+            calls={calls}
+            search={searchText}
+            onCallNumber={onCallNumber}
+            onDataChange={onDataChange}
+          />
+        </TabPanel>
+      </TabPanels>
+    </Tabs>
   );
 };
 

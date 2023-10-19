@@ -15,13 +15,7 @@ import {
 } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
 import { Mic, MicOff, Pause, PhoneOff, Play } from "react-feather";
-import {
-  Call,
-  Message,
-  MessageEvent,
-  SipCallDirection,
-  SipClientStatus,
-} from "src/common/types";
+import { Call, SipCallDirection, SipClientStatus } from "src/common/types";
 import { SipConstants, SipUA } from "src/lib";
 import IncommingCall from "./incomming-call";
 import DialPad from "./dial-pad";
@@ -42,6 +36,7 @@ import {
   saveCurrentCall,
 } from "src/storage";
 import { OutGoingCall } from "./outgoing-call";
+import { v4 as uuidv4 } from "uuid";
 
 type PhoneProbs = {
   sipDomain: string;
@@ -49,6 +44,7 @@ type PhoneProbs = {
   sipUsername: string;
   sipPassword: string;
   sipDisplayName: string;
+  calledNumber: [string, React.Dispatch<React.SetStateAction<string>>];
 };
 
 export const Phone = ({
@@ -57,6 +53,7 @@ export const Phone = ({
   sipUsername,
   sipPassword,
   sipDisplayName,
+  calledNumber: [calledANumber, setCalledANumber],
 }: PhoneProbs) => {
   const [inputNumber, setInputNumber] = useState("");
   const inputNumberRef = useRef(inputNumber);
@@ -102,6 +99,14 @@ export const Phone = ({
     }
   }, [callStatus]);
 
+  useEffect(() => {
+    if (calledANumber) {
+      setInputNumber(calledANumber);
+      makeOutboundCall(calledANumber);
+      setCalledANumber("");
+    }
+  }, [calledANumber]);
+
   // useEffect(() => {
   //   chrome.runtime.onMessage.addListener(function (request) {
   //     const msg = request as Message<any>;
@@ -115,15 +120,15 @@ export const Phone = ({
   //   });
   // }, []);
 
-  const handleCallEvent = (call: Call) => {
-    if (!call.number) return;
+  // const handleCallEvent = (call: Call) => {
+  //   if (!call.number) return;
 
-    if (isSipClientIdle(callStatus)) {
-      setIsCallButtonLoading(true);
-      setInputNumber(call.number);
-      sipUA.current?.call(call.number);
-    }
-  };
+  //   if (isSipClientIdle(callStatus)) {
+  //     setIsCallButtonLoading(true);
+  //     setInputNumber(call.number);
+  //     sipUA.current?.call(call.number);
+  //   }
+  // };
 
   const startCallDurationCounter = () => {
     stopCallDurationCounter();
@@ -175,6 +180,7 @@ export const Phone = ({
           direction: args.session.direction,
           timeStamp: Date.now(),
           duration: "0",
+          callSid: uuidv4(),
         });
       }
       setCallStatus(SipConstants.SESSION_RINGING);
@@ -215,6 +221,7 @@ export const Phone = ({
         direction: call.direction,
         duration: transform(Date.now(), call.timeStamp),
         timeStamp: call.timeStamp,
+        callSid: call.callSid,
       });
     }
     deleteCurrentCall();
@@ -244,17 +251,22 @@ export const Phone = ({
   };
 
   const handleCallButtion = () => {
-    if (sipUA.current && inputNumber) {
+    makeOutboundCall(inputNumber);
+  };
+
+  const makeOutboundCall = (number: string) => {
+    if (sipUA.current && number) {
       setIsCallButtonLoading(true);
       setCallStatus(SipConstants.SESSION_RINGING);
       setSessionDirection("outgoing");
       saveCurrentCall({
-        number: inputNumber,
+        number: number,
         direction: "outgoing",
         timeStamp: Date.now(),
         duration: "0",
+        callSid: uuidv4(),
       });
-      sipUA.current.call(inputNumber);
+      sipUA.current.call(number);
     }
   };
 
@@ -388,7 +400,7 @@ export const Phone = ({
               <Text fontSize="22px" fontWeight="bold">
                 {formatPhoneNumber(inputNumber)}
               </Text>
-              {seconds > 0 && (
+              {seconds >= 0 && (
                 <Text fontSize="15px">
                   {new Date(seconds * 1000).toISOString().substr(11, 8)}
                 </Text>
