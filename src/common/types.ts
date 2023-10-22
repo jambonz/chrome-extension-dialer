@@ -55,7 +55,11 @@ export interface AppSettings {
   sipUsername: string;
   sipPassword: string;
   sipDisplayName: string;
-  apiKey: string;
+}
+
+export interface AdvancedAppSettings {
+  apikey: string;
+  apiServer: string;
 }
 
 export interface CallHistory {

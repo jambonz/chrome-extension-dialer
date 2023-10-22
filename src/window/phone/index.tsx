@@ -14,7 +14,16 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
-import { Mic, MicOff, Pause, PhoneOff, Play } from "react-feather";
+import {
+  GitMerge,
+  List,
+  Mic,
+  MicOff,
+  Pause,
+  PhoneOff,
+  Play,
+  Users,
+} from "react-feather";
 import { Call, SipCallDirection, SipClientStatus } from "src/common/types";
 import { SipConstants, SipUA } from "src/lib";
 import IncommingCall from "./incomming-call";
@@ -381,11 +390,39 @@ export const Phone = ({
         )
       ) : (
         <VStack
-          spacing={4}
+          spacing={2}
           w="full"
           mt={5}
           className={isOnline() ? "" : "blurred"}
         >
+          <HStack spacing={2} align="start" w="full">
+            <Tooltip label="Call to user">
+              <IconButton
+                aria-label="Place call a user"
+                icon={<Users />}
+                variant="unstyled"
+                onClick={handleCallOnHold}
+              />
+            </Tooltip>
+            <Tooltip label="Call to a queue">
+              <IconButton
+                aria-label="Call to a queue"
+                icon={<GitMerge />}
+                variant="unstyled"
+                onClick={handleCallOnHold}
+              />
+            </Tooltip>
+
+            <Tooltip label="Call to an application">
+              <IconButton
+                aria-label="Place call app"
+                icon={<List />}
+                variant="unstyled"
+                onClick={handleCallOnHold}
+              />
+            </Tooltip>
+          </HStack>
+
           {isSipClientIdle(callStatus) ? (
             <Input
               value={inputNumber}
