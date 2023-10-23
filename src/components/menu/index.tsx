@@ -5,6 +5,7 @@ import {
   MenuItem,
   MenuList,
   Spinner,
+  Tooltip,
 } from "@chakra-ui/react";
 import { useState } from "react";
 
@@ -16,12 +17,14 @@ type IconButtonMenuProbs = {
   icon: React.ReactElement;
   onOpen: () => Promise<IconButtonMenuItems[]>;
   onClick: (value: string) => void;
+  tooltip: string;
 };
 
 export const IconButtonMenu = ({
   icon,
   onOpen,
   onClick,
+  tooltip,
 }: IconButtonMenuProbs) => {
   const [items, setItems] = useState<IconButtonMenuItems[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -34,12 +37,15 @@ export const IconButtonMenu = ({
   };
   return (
     <Menu onOpen={handleOnOpen}>
-      <MenuButton
-        as={IconButton}
-        aria-label="Options"
-        icon={icon}
-        variant="unstyled"
-      />
+      <Tooltip label={tooltip}>
+        <MenuButton
+          as={IconButton}
+          aria-label="Options"
+          icon={icon}
+          variant="unstyled"
+        />
+      </Tooltip>
+
       <MenuList>
         {isLoading ? (
           <MenuItem>

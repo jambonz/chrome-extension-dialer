@@ -411,89 +411,86 @@ export const Phone = ({
         >
           {isAdvanceMode && isSipClientIdle(callStatus) && (
             <HStack spacing={2} align="start" w="full">
-              <Tooltip label="Call to user">
-                <IconButtonMenu
-                  icon={<Users />}
-                  onClick={(value) => {
-                    setInputNumber(value);
-                    makeOutboundCall(value);
-                  }}
-                  onOpen={() => {
-                    return new Promise<IconButtonMenuItems[]>(
-                      (resolve, reject) => {
-                        getRegisteredUser()
-                          .then(({ json }) => {
-                            resolve(
-                              json
-                                .filter((u) => !u.includes(sipUsername))
-                                .map((u) => {
-                                  const uName = u.match(/(^.*)@.*/);
-                                  return {
-                                    name: uName ? uName[1] : u,
-                                    value: uName ? uName[1] : u,
-                                  };
-                                })
-                            );
-                          })
-                          .catch((err) => reject(err));
-                      }
-                    );
-                  }}
-                />
-              </Tooltip>
-              <Tooltip label="Call to a queue">
-                <IconButtonMenu
-                  icon={<GitMerge />}
-                  onClick={(value) => {
-                    const calledQueue = `queue-${value}`;
-                    setInputNumber(calledQueue);
-                    makeOutboundCall(calledQueue);
-                  }}
-                  onOpen={() => {
-                    return new Promise<IconButtonMenuItems[]>(
-                      (resolve, reject) => {
-                        getQueues()
-                          .then(({ json }) => {
-                            resolve(
-                              json.map((q) => ({
-                                name: `${q.name} (${q.length})`,
-                                value: q.name,
-                              }))
-                            );
-                          })
-                          .catch((err) => reject(err));
-                      }
-                    );
-                  }}
-                />
-              </Tooltip>
+              <IconButtonMenu
+                icon={<Users />}
+                tooltip="Call to user"
+                onClick={(value) => {
+                  setInputNumber(value);
+                  makeOutboundCall(value);
+                }}
+                onOpen={() => {
+                  return new Promise<IconButtonMenuItems[]>(
+                    (resolve, reject) => {
+                      getRegisteredUser()
+                        .then(({ json }) => {
+                          resolve(
+                            json
+                              .filter((u) => !u.includes(sipUsername))
+                              .map((u) => {
+                                const uName = u.match(/(^.*)@.*/);
+                                return {
+                                  name: uName ? uName[1] : u,
+                                  value: uName ? uName[1] : u,
+                                };
+                              })
+                          );
+                        })
+                        .catch((err) => reject(err));
+                    }
+                  );
+                }}
+              />
+              <IconButtonMenu
+                icon={<GitMerge />}
+                tooltip="Call to a queue"
+                onClick={(value) => {
+                  const calledQueue = `queue-${value}`;
+                  setInputNumber(calledQueue);
+                  makeOutboundCall(calledQueue);
+                }}
+                onOpen={() => {
+                  return new Promise<IconButtonMenuItems[]>(
+                    (resolve, reject) => {
+                      getQueues()
+                        .then(({ json }) => {
+                          resolve(
+                            json.map((q) => ({
+                              name: `${q.name} (${q.length})`,
+                              value: q.name,
+                            }))
+                          );
+                        })
+                        .catch((err) => reject(err));
+                    }
+                  );
+                }}
+              />
 
-              <Tooltip label="Call to an application">
-                <IconButtonMenu
-                  icon={<List />}
-                  onClick={(value) => {
-                    const calledAppId = `app-${value}`;
-                    setInputNumber(calledAppId);
-                    makeOutboundCall(calledAppId);
-                  }}
-                  onOpen={() => {
-                    return new Promise<IconButtonMenuItems[]>(
-                      (resolve, reject) => {
-                        getApplications()
-                          .then(({ json }) => {
-                            resolve(
-                              json.map((a) => ({
-                                name: a.name,
-                                value: a.application_sid,
-                              }))
-                            );
-                          })
-                          .catch((err) => reject(err));
-                      }
-                    );
-                  }}
-                />
-              </Tooltip>
+              <IconButtonMenu
+                icon={<List />}
+                tooltip="Call to an application"
+                onClick={(value) => {
+                  const calledAppId = `app-${value}`;
+                  setInputNumber(calledAppId);
+                  makeOutboundCall(calledAppId);
+                }}
+                onOpen={() => {
+                  return new Promise<IconButtonMenuItems[]>(
+                    (resolve, reject) => {
+                      getApplications()
+                        .then(({ json }) => {
+                          resolve(
+                            json.map((a) => ({
+                              name: a.name,
+                              value: a.application_sid,
+                            }))
+                          );
+                        })
+                        .catch((err) => reject(err));
+                    }
+                  );
+                }}
+              />
             </HStack>
           )}
 
