@@ -270,7 +270,7 @@ export const Phone = ({
     makeOutboundCall(inputNumber);
   };
 
-  const makeOutboundCall = (number: string, customHeaders: string[] = []) => {
+  const makeOutboundCall = (number: string) => {
     if (sipUA.current && number) {
       setIsCallButtonLoading(true);
       setCallStatus(SipConstants.SESSION_RINGING);
@@ -282,6 +282,13 @@ export const Phone = ({
         duration: "0",
         callSid: uuidv4(),
       });
+      // Add custom header if this is special jambonz call
+      let customHeaders: string[] = [];
+      if (number.startsWith("app-")) {
+        customHeaders = [
+          `X-Application-Sid: ${number.substring(4, number.length)}`,
+        ];
+      }
       sipUA.current.call(number, customHeaders);
     }
   };
@@ -467,9 +474,7 @@ export const Phone = ({
                   onClick={(value) => {
                     const calledAppId = `app-${value}`;
                     setInputNumber(calledAppId);
-                    makeOutboundCall(calledAppId, [
-                      `X-Application-Sid: ${value}`,
-                    ]);
+                    makeOutboundCall(calledAppId);
                   }}
                   onOpen={() => {
                     return new Promise<IconButtonMenuItems[]>(
