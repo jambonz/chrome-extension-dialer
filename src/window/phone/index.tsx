@@ -408,7 +408,8 @@ export const Phone = ({
                 <IconButtonMenu
                   icon={<Users />}
                   onClick={(value) => {
-                    console.log(value);
+                    setInputNumber(value);
+                    makeOutboundCall(value);
                   }}
                   onOpen={() => {
                     return new Promise<IconButtonMenuItems[]>(
@@ -416,13 +417,15 @@ export const Phone = ({
                         getRegisteredUser()
                           .then(({ json }) => {
                             resolve(
-                              json.map((u) => {
-                                const uName = u.match(/(^.*)@.*/);
-                                return {
-                                  name: uName ? uName[1] : u,
-                                  value: uName ? uName[1] : u,
-                                };
-                              })
+                              json
+                                .filter((u) => !u.includes(sipUsername))
+                                .map((u) => {
+                                  const uName = u.match(/(^.*)@.*/);
+                                  return {
+                                    name: uName ? uName[1] : u,
+                                    value: uName ? uName[1] : u,
+                                  };
+                                })
                             );
                           })
                           .catch((err) => reject(err));
@@ -435,7 +438,8 @@ export const Phone = ({
                 <IconButtonMenu
                   icon={<GitMerge />}
                   onClick={(value) => {
-                    console.log(value);
+                    setInputNumber(value);
+                    makeOutboundCall(value);
                   }}
                   onOpen={() => {
                     return new Promise<IconButtonMenuItems[]>(
@@ -445,7 +449,7 @@ export const Phone = ({
                             resolve(
                               json.map((q) => ({
                                 name: q,
-                                value: q,
+                                value: `queue-${q}`,
                               }))
                             );
                           })
@@ -460,7 +464,8 @@ export const Phone = ({
                 <IconButtonMenu
                   icon={<List />}
                   onClick={(value) => {
-                    console.log(value);
+                    setInputNumber(value);
+                    makeOutboundCall(value);
                   }}
                   onOpen={() => {
                     return new Promise<IconButtonMenuItems[]>(
@@ -470,7 +475,7 @@ export const Phone = ({
                             resolve(
                               json.map((a) => ({
                                 name: a.name,
-                                value: a.application_sid,
+                                value: `app-${a.application_sid}`,
                               }))
                             );
                           })
