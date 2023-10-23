@@ -270,7 +270,7 @@ export const Phone = ({
     makeOutboundCall(inputNumber);
   };
 
-  const makeOutboundCall = (number: string) => {
+  const makeOutboundCall = (number: string, customHeaders: string[] = []) => {
     if (sipUA.current && number) {
       setIsCallButtonLoading(true);
       setCallStatus(SipConstants.SESSION_RINGING);
@@ -282,7 +282,7 @@ export const Phone = ({
         duration: "0",
         callSid: uuidv4(),
       });
-      sipUA.current.call(number);
+      sipUA.current.call(number, customHeaders);
     }
   };
 
@@ -449,7 +449,7 @@ export const Phone = ({
                             resolve(
                               json.map((q) => ({
                                 name: q,
-                                value: `queue-${q}`,
+                                value: q,
                               }))
                             );
                           })
@@ -464,8 +464,11 @@ export const Phone = ({
                 <IconButtonMenu
                   icon={<List />}
                   onClick={(value) => {
-                    setInputNumber(value);
-                    makeOutboundCall(value);
+                    const calledAppId = `app-${value}`;
+                    setInputNumber(calledAppId);
+                    makeOutboundCall(calledAppId, [
+                      `X-Application-Sid: ${value}`,
+                    ]);
                   }}
                   onOpen={() => {
                     return new Promise<IconButtonMenuItems[]>(
@@ -475,7 +478,7 @@ export const Phone = ({
                             resolve(
                               json.map((a) => ({
                                 name: a.name,
-                                value: `app-${a.application_sid}`,
+                                value: a.application_sid,
                               }))
                             );
                           })
