@@ -438,8 +438,9 @@ export const Phone = ({
                 <IconButtonMenu
                   icon={<GitMerge />}
                   onClick={(value) => {
-                    setInputNumber(value);
-                    makeOutboundCall(value);
+                    const calledQueue = `queue-${value}`;
+                    setInputNumber(calledQueue);
+                    makeOutboundCall(calledQueue);
                   }}
                   onOpen={() => {
                     return new Promise<IconButtonMenuItems[]>(
