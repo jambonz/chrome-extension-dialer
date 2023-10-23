@@ -1,4 +1,10 @@
-import { Application, FetchError, FetchTransport, StatusCodes } from "./types";
+import {
+  Application,
+  FetchError,
+  FetchTransport,
+  Queue,
+  StatusCodes,
+} from "./types";
 import { MSG_SOMETHING_WRONG } from "./constants";
 import { getAdvancedSettings } from "src/storage";
 
@@ -134,7 +140,7 @@ export const getApplications = () => {
 
 export const getQueues = () => {
   const advancedSettings = getAdvancedSettings();
-  return getFetch<string[]>(
+  return getFetch<Queue[]>(
     `${advancedSettings.apiServer}/Accounts/${advancedSettings.accountSid}/Queues`
   );
 };

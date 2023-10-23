@@ -29,3 +29,8 @@ export interface Application {
   application_sid: string;
   name: string;
 }
+
+export interface Queue {
+  name: string;
+  length: number;
+}

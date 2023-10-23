@@ -449,8 +449,8 @@ export const Phone = ({
                           .then(({ json }) => {
                             resolve(
                               json.map((q) => ({
-                                name: q,
-                                value: q,
+                                name: `${q.name} (${q.length})`,
+                                value: q.name,
                               }))
                             );
                           })
