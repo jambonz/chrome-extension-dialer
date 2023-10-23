@@ -58,7 +58,8 @@ export interface AppSettings {
 }
 
 export interface AdvancedAppSettings {
-  apikey: string;
+  accountSid: string;
+  apiKey: string;
   apiServer: string;
 }
 

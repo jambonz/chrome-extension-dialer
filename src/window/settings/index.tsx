@@ -1,8 +1,8 @@
 import { Tab, TabList, TabPanel, TabPanels, Tabs } from "@chakra-ui/react";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { DEFAULT_COLOR_SCHEME } from "src/common/constants";
 import BasicSettings from "./basic";
-import AdvanceSettings from "./advance";
+import AdvancedSettings from "./advanced";
 
 export const Settings = () => {
   return (
@@ -17,7 +17,7 @@ export const Settings = () => {
           <BasicSettings />
         </TabPanel>
         <TabPanel p={0}>
-          <AdvanceSettings />
+          <AdvancedSettings />
         </TabPanel>
       </TabPanels>
     </Tabs>

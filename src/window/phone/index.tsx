@@ -40,12 +40,16 @@ import GreenAvatar from "src/imgs/icons/Avatar-Green.svg";
 import "./styles.scss";
 import {
   deleteCurrentCall,
+  getAdvancedSettings,
   getCurrentCall,
   saveCallHistory,
   saveCurrentCall,
 } from "src/storage";
 import { OutGoingCall } from "./outgoing-call";
 import { v4 as uuidv4 } from "uuid";
+import IconButtonMenu, { IconButtonMenuItems } from "src/components/menu";
+import { Application } from "src/api/types";
+import { getApplications, getQueues, getRegisteredUser } from "src/api";
 
 type PhoneProbs = {
   sipDomain: string;
@@ -79,6 +83,7 @@ export const Phone = ({
   const [isStatusDropdownDisabled, setIsStatusDropdownDisabled] =
     useState(false);
   const [isCallButtonLoading, setIsCallButtonLoading] = useState(false);
+  const [isAdvanceMode, setIsAdvancedMode] = useState(false);
 
   useEffect(() => {
     if (sipDomain && sipUsername && sipPassword && sipServerAddress) {
@@ -88,6 +93,8 @@ export const Phone = ({
       setIsConfigured(false);
       clientGoOffline();
     }
+    const advancedSettings = getAdvancedSettings();
+    setIsAdvancedMode(!!advancedSettings.accountSid);
   }, [sipDomain, sipUsername, sipPassword, sipServerAddress, sipDisplayName]);
 
   useEffect(() => {
@@ -395,33 +402,86 @@ export const Phone = ({
           mt={5}
           className={isOnline() ? "" : "blurred"}
         >
-          <HStack spacing={2} align="start" w="full">
-            <Tooltip label="Call to user">
-              <IconButton
-                aria-label="Place call a user"
-                icon={<Users />}
-                variant="unstyled"
-                onClick={handleCallOnHold}
-              />
-            </Tooltip>
-            <Tooltip label="Call to a queue">
-              <IconButton
-                aria-label="Call to a queue"
-                icon={<GitMerge />}
-                variant="unstyled"
-                onClick={handleCallOnHold}
-              />
-            </Tooltip>
+          {isAdvanceMode && (
+            <HStack spacing={2} align="start" w="full">
+              <Tooltip label="Call to user">
+                <IconButtonMenu
+                  icon={<Users />}
+                  onClick={(value) => {
+                    console.log(value);
+                  }}
+                  onOpen={() => {
+                    return new Promise<IconButtonMenuItems[]>(
+                      (resolve, reject) => {
+                        getRegisteredUser()
+                          .then(({ json }) => {
+                            resolve(
+                              json.map((u) => {
+                                const uName = u.match(/(^.*)@.*/);
+                                return {
+                                  name: uName ? uName[1] : u,
+                                  value: uName ? uName[1] : u,
+                                };
+                              })
+                            );
+                          })
+                          .catch((err) => reject(err));
+                      }
+                    );
+                  }}
+                />
+              </Tooltip>
+              <Tooltip label="Call to a queue">
+                <IconButtonMenu
+                  icon={<GitMerge />}
+                  onClick={(value) => {
+                    console.log(value);
+                  }}
+                  onOpen={() => {
+                    return new Promise<IconButtonMenuItems[]>(
+                      (resolve, reject) => {
+                        getQueues()
+                          .then(({ json }) => {
+                            resolve(
+                              json.map((q) => ({
+                                name: q,
+                                value: q,
+                              }))
+                            );
+                          })
+                          .catch((err) => reject(err));
+                      }
+                    );
+                  }}
+                />
+              </Tooltip>
 
-            <Tooltip label="Call to an application">
-              <IconButton
-                aria-label="Place call app"
-                icon={<List />}
-                variant="unstyled"
-                onClick={handleCallOnHold}
-              />
-            </Tooltip>
-          </HStack>
+              <Tooltip label="Call to an application">
+                <IconButtonMenu
+                  icon={<List />}
+                  onClick={(value) => {
+                    console.log(value);
+                  }}
+                  onOpen={() => {
+                    return new Promise<IconButtonMenuItems[]>(
+                      (resolve, reject) => {
+                        getApplications()
+                          .then(({ json }) => {
+                            resolve(
+                              json.map((a) => ({
+                                name: a.name,
+                                value: a.application_sid,
+                              }))
+                            );
+                          })
+                          .catch((err) => reject(err));
+                      }
+                    );
+                  }}
+                />
+              </Tooltip>
+            </HStack>
+          )}
 
           {isSipClientIdle(callStatus) ? (
             <Input

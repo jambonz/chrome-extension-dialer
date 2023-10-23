@@ -11,11 +11,13 @@ import { Eye, EyeOff } from "react-feather";
 type PasswordInputProbs = {
   password: [string, React.Dispatch<React.SetStateAction<string>>];
   placeHolder?: string;
+  isRequired?: boolean;
 };
 
 function PasswordInput({
   password: [pass, setPass],
   placeHolder,
+  isRequired = false,
 }: PasswordInputProbs) {
   const [showPassword, setShowPassword] = useState(false);
   const handleClick = () => setShowPassword(!showPassword);
@@ -27,6 +29,7 @@ function PasswordInput({
         type={showPassword ? "text" : "password"}
         placeholder={placeHolder || ""}
         value={pass}
+        isRequired
         onChange={(e) => setPass(e.target.value)}
       />
       <InputRightElement width="4.5rem">

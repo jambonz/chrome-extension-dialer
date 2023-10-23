@@ -9,16 +9,47 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { AdvancedAppSettings } from "src/common/types";
 import PasswordInput from "src/components/password-input";
 import InfoIcon from "src/imgs/icons/Info.svg";
 import ResetIcon from "src/imgs/icons/Reset.svg";
+import { getAdvancedSettings, saveAddvancedSettings } from "src/storage";
 
-export const AdvanceSettings = () => {
+export const AdvancedSettings = () => {
   const [apiKey, setApiKey] = useState("");
   const [apiServer, setApiServer] = useState("");
-  const handleSubmit = () => {};
-  const resetSetting = () => {};
+  const [accountSid, setAccountSid] = useState("");
+
+  useEffect(() => {
+    const settings = getAdvancedSettings();
+    if (settings.apiServer) {
+      setApiServer(settings.apiServer);
+    }
+    if (settings.apiKey) {
+      setApiKey(settings.apiKey);
+    }
+    if (settings.accountSid) {
+      setAccountSid(settings.accountSid);
+    }
+  }, []);
+
+  const handleSubmit = () => {
+    const settings: AdvancedAppSettings = {
+      accountSid,
+      apiKey,
+      apiServer,
+    };
+
+    saveAddvancedSettings(settings);
+  };
+  const resetSetting = () => {
+    saveAddvancedSettings({} as AdvancedAppSettings);
+    setApiKey("");
+    setApiServer("");
+    setAccountSid("");
+  };
+
   return (
     <form onSubmit={handleSubmit}>
       <VStack spacing={2} w="full" h="full" p={0}>
@@ -29,7 +60,7 @@ export const AdvanceSettings = () => {
           w="full"
           p={0}
         >
-          <FormControl id="jambonz_server_address">
+          <FormControl id="jambonz_api_server">
             <FormLabel>Jambonz API Server Base URL</FormLabel>
             <Input
               type="text"
@@ -39,9 +70,19 @@ export const AdvanceSettings = () => {
               onChange={(e) => setApiServer(e.target.value)}
             />
           </FormControl>
+          <FormControl id="jambonz_account_sid">
+            <FormLabel>Jambonz Account Sid</FormLabel>
+            <Input
+              type="text"
+              placeholder="Account Sid"
+              isRequired
+              value={accountSid}
+              onChange={(e) => setAccountSid(e.target.value)}
+            />
+          </FormControl>
           <FormControl id="api_key">
             <FormLabel>API Key</FormLabel>
-            <PasswordInput password={[apiKey, setApiKey]} />
+            <PasswordInput password={[apiKey, setApiKey]} isRequired />
           </FormControl>
         </VStack>
         <Button colorScheme="jambonz" type="submit" w="full">
@@ -66,4 +107,4 @@ export const AdvanceSettings = () => {
   );
 };
 
-export default AdvanceSettings;
+export default AdvancedSettings;
