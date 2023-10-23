@@ -9,7 +9,7 @@ export const Settings = () => {
     <Tabs isFitted colorScheme={DEFAULT_COLOR_SCHEME}>
       <TabList mb="1em" gap={1}>
         <Tab>Basic</Tab>
-        <Tab>Advance</Tab>
+        <Tab>Advanced</Tab>
       </TabList>
 
       <TabPanels mt={1}>

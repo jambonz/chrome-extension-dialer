@@ -441,7 +441,7 @@ export const Phone = ({
                 }}
               />
               <IconButtonMenu
-                icon={<GitMerge />}
+                icon={<List />}
                 tooltip="Call to a queue"
                 onClick={(value) => {
                   const calledQueue = `queue-${value}`;
@@ -467,7 +467,7 @@ export const Phone = ({
               />
 
               <IconButtonMenu
-                icon={<List />}
+                icon={<GitMerge />}
                 tooltip="Call to an application"
                 onClick={(value) => {
                   const calledAppId = `app-${value}`;
