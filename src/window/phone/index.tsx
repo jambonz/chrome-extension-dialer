@@ -409,7 +409,7 @@ export const Phone = ({
           mt={5}
           className={isOnline() ? "" : "blurred"}
         >
-          {isAdvanceMode && (
+          {isAdvanceMode && isSipClientIdle(callStatus) && (
             <HStack spacing={2} align="start" w="full">
               <Tooltip label="Call to user">
                 <IconButtonMenu
@@ -497,26 +497,20 @@ export const Phone = ({
             </HStack>
           )}
 
-          {isSipClientIdle(callStatus) ? (
-            <Input
-              value={inputNumber}
-              bg="grey.500"
-              fontWeight="bold"
-              fontSize="24px"
-              onChange={(e) => setInputNumber(e.target.value)}
-              textAlign="center"
-            />
-          ) : (
-            <VStack>
-              <Text fontSize="22px" fontWeight="bold">
-                {formatPhoneNumber(inputNumber)}
-              </Text>
-              {seconds >= 0 && (
-                <Text fontSize="15px">
-                  {new Date(seconds * 1000).toISOString().substr(11, 8)}
-                </Text>
-              )}
-            </VStack>
+          <Input
+            value={inputNumber}
+            bg="grey.500"
+            fontWeight="bold"
+            fontSize="24px"
+            onChange={(e) => setInputNumber(e.target.value)}
+            textAlign="center"
+            isReadOnly={!isSipClientIdle(callStatus)}
+          />
+
+          {!isSipClientIdle(callStatus) && seconds >= 0 && (
+            <Text fontSize="15px">
+              {new Date(seconds * 1000).toISOString().substr(11, 8)}
+            </Text>
           )}
 
           <DialPad handleDigitPress={handleDialPadClick} />
