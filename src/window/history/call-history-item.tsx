@@ -85,15 +85,14 @@ export const CallHistoryItem = ({
           {dayjs(call.timeStamp).format("MMM D, hh:mm A")}
         </Text>
       </VStack>
-      <Tooltip
-        label={
-          isSaved && call.isSaved ? "Delete" : call.isSaved ? "Unsaved" : "Save"
-        }
-      >
+      <Tooltip label={isSaved && call.isSaved ? "Delete" : "Save"}>
         <IconButton
           aria-label="save recents"
           icon={isSaved && call.isSaved ? <Trash2 /> : <Save />}
           onClick={() => {
+            if (!isSaved && call.isSaved) {
+              return;
+            }
             const settings = getSettings();
             if (settings.sipUsername) {
               isSaveCallHistory(
