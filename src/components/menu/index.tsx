@@ -16,7 +16,7 @@ export interface IconButtonMenuItems {
 type IconButtonMenuProbs = {
   icon: React.ReactElement;
   onOpen: () => Promise<IconButtonMenuItems[]>;
-  onClick: (value: string) => void;
+  onClick: (name: string, value: string) => void;
   tooltip: string;
 };
 
@@ -53,7 +53,7 @@ export const IconButtonMenu = ({
           </MenuItem>
         ) : (
           items.map((i, idx) => (
-            <MenuItem key={idx} onClick={() => onClick(i.value)}>
+            <MenuItem key={idx} onClick={() => onClick(i.name, i.value)}>
               {i.name}
             </MenuItem>
           ))

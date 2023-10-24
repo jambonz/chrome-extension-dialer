@@ -58,3 +58,11 @@ export const isSipClientIdle = (callStatus: string) => {
     callStatus === SipConstants.SESSION_FAILED
   );
 };
+
+export const normalizeUrl = (input: string): string => {
+  // Extract the domain name
+  const url = new URL(input.startsWith("http") ? input : `https://${input}`);
+
+  // Return the fully formed URL
+  return `${url.protocol}//${url.hostname}/api/v1`;
+};

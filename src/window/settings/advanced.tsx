@@ -3,6 +3,7 @@ import {
   FormControl,
   FormLabel,
   HStack,
+  Icon,
   Image,
   Input,
   Spacer,
@@ -10,20 +11,27 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
+import { CheckCircle, XCircle } from "react-feather";
+import { getApplications } from "src/api";
 import { AdvancedAppSettings } from "src/common/types";
 import PasswordInput from "src/components/password-input";
 import InfoIcon from "src/imgs/icons/Info.svg";
 import ResetIcon from "src/imgs/icons/Reset.svg";
 import { getAdvancedSettings, saveAddvancedSettings } from "src/storage";
+import { normalizeUrl } from "src/utils";
 
 export const AdvancedSettings = () => {
   const [apiKey, setApiKey] = useState("");
   const [apiServer, setApiServer] = useState("");
   const [accountSid, setAccountSid] = useState("");
+  const [isCredentialOk, setIsCredentialOk] = useState(false);
+  const [isAdvancedMode, setIsAdvancedMode] = useState(false);
 
   useEffect(() => {
     const settings = getAdvancedSettings();
     if (settings.apiServer) {
+      setIsAdvancedMode(true);
+      checkCredential();
       setApiServer(settings.apiServer);
     }
     if (settings.apiKey) {
@@ -34,20 +42,35 @@ export const AdvancedSettings = () => {
     }
   }, []);
 
-  const handleSubmit = () => {
+  const checkCredential = () => {
+    getApplications()
+      .then(() => {
+        setIsCredentialOk(true);
+      })
+      .catch(() => {
+        setIsCredentialOk(false);
+      });
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setApiServer(normalizeUrl(apiServer));
     const settings: AdvancedAppSettings = {
       accountSid,
       apiKey,
-      apiServer,
+      apiServer: normalizeUrl(apiServer),
     };
 
     saveAddvancedSettings(settings);
+    setIsAdvancedMode(true);
+    checkCredential();
   };
   const resetSetting = () => {
     saveAddvancedSettings({} as AdvancedAppSettings);
     setApiKey("");
     setApiServer("");
     setAccountSid("");
+    setIsAdvancedMode(false);
   };
 
   return (
@@ -85,6 +108,22 @@ export const AdvancedSettings = () => {
             <PasswordInput password={[apiKey, setApiKey]} isRequired />
           </FormControl>
         </VStack>
+        {isAdvancedMode && (
+          <HStack w="full" mt={2} mb={2}>
+            <Icon
+              as={isCredentialOk ? CheckCircle : XCircle}
+              color={isCredentialOk ? "green.500" : "red.500"}
+              boxSize={6}
+            />
+            <Text
+              fontSize="14px"
+              color={isCredentialOk ? "green.500" : "red.500"}
+            >
+              Credential is {isCredentialOk ? "valid" : "invalid"}
+            </Text>
+          </HStack>
+        )}
+
         <Button colorScheme="jambonz" type="submit" w="full">
           Save
         </Button>

@@ -24,12 +24,15 @@ import {
   Play,
   Users,
 } from "react-feather";
-import { Call, SipCallDirection, SipClientStatus } from "src/common/types";
+import {
+  AdvancedAppSettings,
+  SipCallDirection,
+  SipClientStatus,
+} from "src/common/types";
 import { SipConstants, SipUA } from "src/lib";
 import IncommingCall from "./incomming-call";
 import DialPad from "./dial-pad";
 import {
-  formatPhoneNumber,
   isSipClientAnswered,
   isSipClientIdle,
   isSipClientRinging,
@@ -48,7 +51,6 @@ import {
 import { OutGoingCall } from "./outgoing-call";
 import { v4 as uuidv4 } from "uuid";
 import IconButtonMenu, { IconButtonMenuItems } from "src/components/menu";
-import { Application } from "src/api/types";
 import { getApplications, getQueues, getRegisteredUser } from "src/api";
 
 type PhoneProbs = {
@@ -58,6 +60,7 @@ type PhoneProbs = {
   sipPassword: string;
   sipDisplayName: string;
   calledNumber: [string, React.Dispatch<React.SetStateAction<string>>];
+  advancedSettings: AdvancedAppSettings;
 };
 
 export const Phone = ({
@@ -67,8 +70,10 @@ export const Phone = ({
   sipPassword,
   sipDisplayName,
   calledNumber: [calledANumber, setCalledANumber],
+  advancedSettings,
 }: PhoneProbs) => {
   const [inputNumber, setInputNumber] = useState("");
+  const [appName, setAppName] = useState("");
   const inputNumberRef = useRef(inputNumber);
   const [status, setStatus] = useState<SipClientStatus>("offline");
   const [isConfigured, setIsConfigured] = useState(false);
@@ -93,9 +98,12 @@ export const Phone = ({
       setIsConfigured(false);
       clientGoOffline();
     }
+  }, [sipDomain, sipUsername, sipPassword, sipServerAddress, sipDisplayName]);
+
+  useEffect(() => {
     const advancedSettings = getAdvancedSettings();
     setIsAdvancedMode(!!advancedSettings.accountSid);
-  }, [sipDomain, sipUsername, sipPassword, sipServerAddress, sipDisplayName]);
+  }, [advancedSettings]);
 
   useEffect(() => {
     inputNumberRef.current = inputNumber;
@@ -400,7 +408,10 @@ export const Phone = ({
             decline={handleDecline}
           />
         ) : (
-          <OutGoingCall number={inputNumber} cancelCall={handleDecline} />
+          <OutGoingCall
+            number={inputNumber || appName}
+            cancelCall={handleDecline}
+          />
         )
       ) : (
         <VStack
@@ -414,7 +425,7 @@ export const Phone = ({
               <IconButtonMenu
                 icon={<Users />}
                 tooltip="Call to user"
-                onClick={(value) => {
+                onClick={(_, value) => {
                   setInputNumber(value);
                   makeOutboundCall(value);
                 }}
@@ -443,9 +454,10 @@ export const Phone = ({
               <IconButtonMenu
                 icon={<List />}
                 tooltip="Call to a queue"
-                onClick={(value) => {
+                onClick={(name, value) => {
+                  setAppName(`Queue ${name}`);
                   const calledQueue = `queue-${value}`;
-                  setInputNumber(calledQueue);
+                  setInputNumber("");
                   makeOutboundCall(calledQueue);
                 }}
                 onOpen={() => {
@@ -469,9 +481,10 @@ export const Phone = ({
               <IconButtonMenu
                 icon={<GitMerge />}
                 tooltip="Call to an application"
-                onClick={(value) => {
+                onClick={(name, value) => {
+                  setAppName(`App ${name}`);
                   const calledAppId = `app-${value}`;
-                  setInputNumber(calledAppId);
+                  setInputNumber("");
                   makeOutboundCall(calledAppId);
                 }}
                 onOpen={() => {
