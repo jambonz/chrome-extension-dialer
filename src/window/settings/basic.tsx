@@ -141,10 +141,10 @@ export const BasicSettings = () => {
           Save
         </Button>
         <HStack w="full">
-          <HStack spacing={1}>
+          {/* <HStack spacing={1}>
             <Image src={InfoIcon} w="30px" h="30px" />
             <Text fontSize="14px">Get help</Text>
-          </HStack>
+          </HStack> */}
 
           <Spacer />
           <HStack spacing={1}>

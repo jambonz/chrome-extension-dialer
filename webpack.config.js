@@ -184,7 +184,7 @@ function getHtmlPlugins(chunks) {
   return chunks.map(
     (chunk) =>
       new HTMLPlugin({
-        title: "Jambonz Webrtc Client",
+        title: "Jambonz Webphone",
         filename: `${chunk}.html`,
         chunks: [chunk],
       })

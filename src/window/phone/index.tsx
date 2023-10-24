@@ -443,7 +443,7 @@ export const Phone = ({
             <HStack spacing={2} align="start" w="full">
               <IconButtonMenu
                 icon={<Users />}
-                tooltip="Call a user"
+                tooltip="Call an online user"
                 noResultLabel="No registered users"
                 onClick={(_, value) => {
                   setInputNumber(value);

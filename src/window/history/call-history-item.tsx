@@ -14,7 +14,6 @@ import {
   PhoneIncoming,
   PhoneOutgoing,
   Save,
-  Star,
   Trash2,
 } from "react-feather";
 import { CallHistory, SipCallDirection } from "src/common/types";
@@ -25,12 +24,14 @@ type CallHistoryItemProbs = {
   call: CallHistory;
   onDataChange?: (call: CallHistory) => void;
   onCallNumber?: (number: string, name: string | undefined) => void;
+  isSaved?: boolean;
 };
 
 export const CallHistoryItem = ({
   call,
   onDataChange,
   onCallNumber,
+  isSaved,
 }: CallHistoryItemProbs) => {
   const [callEnable, setCallEnable] = useState(false);
   const getDirectionIcon = (direction: SipCallDirection) => {
@@ -84,10 +85,14 @@ export const CallHistoryItem = ({
           {dayjs(call.timeStamp).format("MMM D, hh:mm A")}
         </Text>
       </VStack>
-      <Tooltip label={call.isSaved ? "Remove" : "Save"}>
+      <Tooltip
+        label={
+          isSaved && call.isSaved ? "Delete" : call.isSaved ? "Unsaved" : "Save"
+        }
+      >
         <IconButton
           aria-label="save recents"
-          icon={call.isSaved ? <Trash2 /> : <Save />}
+          icon={isSaved && call.isSaved ? <Trash2 /> : <Save />}
           onClick={() => {
             const settings = getSettings();
             if (settings.sipUsername) {

@@ -53,6 +53,7 @@ export const Recents = ({
         >
           {callHistories.map((c) => (
             <CallHistoryItem
+              isSaved={isSaved}
               call={c}
               onCallNumber={onCallNumber}
               onDataChange={onDataChange}
