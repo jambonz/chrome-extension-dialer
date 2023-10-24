@@ -97,7 +97,6 @@ export const AdvancedSettings = () => {
             <FormLabel>Jambonz Account Sid</FormLabel>
             <Input
               type="text"
-              placeholder="Account Sid"
               isRequired
               value={accountSid}
               onChange={(e) => setAccountSid(e.target.value)}

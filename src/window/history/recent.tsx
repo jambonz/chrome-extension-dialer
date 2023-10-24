@@ -61,7 +61,7 @@ export const Recents = ({
         </UnorderedList>
       ) : (
         <Text fontSize="24px" fontWeight="bold">
-          No Call History
+          {isSaved ? "No saved calls" : "No Call History"}
         </Text>
       )}
     </VStack>

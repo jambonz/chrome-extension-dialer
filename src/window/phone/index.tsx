@@ -94,7 +94,11 @@ export const Phone = ({
 
   useEffect(() => {
     if (sipDomain && sipUsername && sipPassword && sipServerAddress) {
-      createSipClient();
+      if (sipUA.current) {
+        clientGoOffline();
+      } else {
+        createSipClient();
+      }
       setIsConfigured(true);
     } else {
       setIsConfigured(false);
@@ -181,8 +185,6 @@ export const Phone = ({
   };
 
   const createSipClient = () => {
-    clientGoOffline();
-
     const client = {
       username: `${sipUsername}@${sipDomain}`,
       password: sipPassword,
@@ -205,7 +207,11 @@ export const Phone = ({
     });
     sipClient.on(SipConstants.UA_UNREGISTERED, (args) => {
       setStatus("offline");
-      clientGoOffline();
+      if (sipDomain && sipUsername && sipPassword && sipServerAddress) {
+        createSipClient();
+      } else {
+        clientGoOffline();
+      }
     });
     // Call Status
     sipClient.on(SipConstants.SESSION_RINGING, (args) => {
@@ -383,7 +389,7 @@ export const Phone = ({
             <VStack spacing={2} alignItems="start" w="full">
               <HStack spacing={2} w="full">
                 <Text fontWeight="bold" fontSize="13px">
-                  {sipDisplayName ?? sipUsername}
+                  {sipDisplayName || sipUsername}
                 </Text>
                 <Circle size="8px" bg={isOnline() ? "green.500" : "gray.500"} />
                 <Select
@@ -437,7 +443,8 @@ export const Phone = ({
             <HStack spacing={2} align="start" w="full">
               <IconButtonMenu
                 icon={<Users />}
-                tooltip="Call to user"
+                tooltip="Call a user"
+                noResultLabel="No registered users"
                 onClick={(_, value) => {
                   setInputNumber(value);
                   makeOutboundCall(value);
@@ -466,7 +473,8 @@ export const Phone = ({
               />
               <IconButtonMenu
                 icon={<List />}
-                tooltip="Call to a queue"
+                tooltip="Take a call from queue"
+                noResultLabel="No calls in queue"
                 onClick={(name, value) => {
                   setAppName(`Queue ${name}`);
                   const calledQueue = `queue-${value}`;
@@ -493,7 +501,8 @@ export const Phone = ({
 
               <IconButtonMenu
                 icon={<GitMerge />}
-                tooltip="Call to an application"
+                tooltip="Call an application"
+                noResultLabel="No applications"
                 onClick={(name, value) => {
                   setAppName(`App ${name}`);
                   const calledAppId = `app-${value}`;

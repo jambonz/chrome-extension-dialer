@@ -128,11 +128,10 @@ export const BasicSettings = () => {
           </FormControl>
 
           <FormControl id="sip_display_name">
-            <FormLabel>SIP Display Name</FormLabel>
+            <FormLabel>SIP Display Name (Optional)</FormLabel>
             <Input
               type="text"
               placeholder="Display name"
-              isRequired
               value={sipDisplayName}
               onChange={(e) => setSipDisplayName(e.target.value)}
             />

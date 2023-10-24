@@ -18,6 +18,7 @@ type IconButtonMenuProbs = {
   onOpen: () => Promise<IconButtonMenuItems[]>;
   onClick: (name: string, value: string) => void;
   tooltip: string;
+  noResultLabel: string;
 };
 
 export const IconButtonMenu = ({
@@ -25,6 +26,7 @@ export const IconButtonMenu = ({
   onOpen,
   onClick,
   tooltip,
+  noResultLabel,
 }: IconButtonMenuProbs) => {
   const [items, setItems] = useState<IconButtonMenuItems[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -51,12 +53,14 @@ export const IconButtonMenu = ({
           <MenuItem>
             <Spinner color="jambonz.500" size="xs" />
           </MenuItem>
-        ) : (
+        ) : items.length > 0 ? (
           items.map((i, idx) => (
             <MenuItem key={idx} onClick={() => onClick(i.name, i.value)}>
               {i.name}
             </MenuItem>
           ))
+        ) : (
+          <MenuItem>{noResultLabel}</MenuItem>
         )}
       </MenuList>
     </Menu>
