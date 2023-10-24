@@ -140,20 +140,20 @@ export const BasicSettings = () => {
         <Button colorScheme="jambonz" type="submit" w="full">
           Save
         </Button>
-        <HStack w="full">
+        <VStack w="full" alignItems="center" mt={2}>
           {/* <HStack spacing={1}>
             <Image src={InfoIcon} w="30px" h="30px" />
             <Text fontSize="14px">Get help</Text>
           </HStack> */}
 
-          <Spacer />
+          {/* <Spacer /> */}
           <HStack spacing={1}>
             <Image src={ResetIcon} w="30px" h="30px" />
             <Text fontSize="14px" onClick={resetSetting} cursor="pointer">
               Reset settings
             </Text>
           </HStack>
-        </HStack>
+        </VStack>
       </VStack>
     </form>
   );
