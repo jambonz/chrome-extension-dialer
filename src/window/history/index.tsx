@@ -1,5 +1,4 @@
 import {
-  VStack,
   Grid,
   HStack,
   InputGroup,
@@ -7,18 +6,15 @@ import {
   InputLeftElement,
   Icon,
   Text,
-  Spacer,
-  UnorderedList,
   Tabs,
   TabList,
   Tab,
   TabPanels,
   TabPanel,
 } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Search, Sliders } from "react-feather";
 import { CallHistory } from "src/common/types";
-import CallHistoryItem from "./call-history-item";
 
 import { DEFAULT_COLOR_SCHEME } from "src/common/constants";
 import Recents from "./recent";
@@ -26,7 +22,7 @@ import Recents from "./recent";
 type CallHistoriesProbs = {
   calls: CallHistory[];
   onDataChange?: (call: CallHistory) => void;
-  onCallNumber?: (number: string) => void;
+  onCallNumber?: (number: string, name: string | undefined) => void;
 };
 
 export const CallHistories = ({
@@ -39,8 +35,8 @@ export const CallHistories = ({
   return (
     <Tabs isFitted colorScheme={DEFAULT_COLOR_SCHEME}>
       <TabList mb="1em" gap={1}>
-        <Tab>Saved</Tab>
         <Tab>Recent</Tab>
+        <Tab>Saved</Tab>
       </TabList>
 
       <Grid w="full" templateColumns="1fr auto" gap={5}>
@@ -71,7 +67,6 @@ export const CallHistories = ({
           <Recents
             calls={calls}
             search={searchText}
-            isSaved
             onCallNumber={onCallNumber}
             onDataChange={onDataChange}
           />
@@ -80,6 +75,7 @@ export const CallHistories = ({
           <Recents
             calls={calls}
             search={searchText}
+            isSaved
             onCallNumber={onCallNumber}
             onDataChange={onDataChange}
           />

@@ -9,7 +9,7 @@ type RecentsProbs = {
   search: string;
   isSaved?: boolean;
   onDataChange?: (call: CallHistory) => void;
-  onCallNumber?: (number: string) => void;
+  onCallNumber?: (number: string, name: string | undefined) => void;
 };
 
 export const Recents = ({

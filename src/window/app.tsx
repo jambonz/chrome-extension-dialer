@@ -33,6 +33,7 @@ export const WindowApp = () => {
   const [sipDisplayName, setSipDisplayName] = useState("");
   const [callHistories, setCallHistories] = useState<CallHistory[]>([]);
   const [calledNumber, setCalledNumber] = useState("");
+  const [calledName, setCalledName] = useState("");
   const [tabIndex, setTabIndex] = useState(0);
   const [advancedSettings, setAdvancedSettings] = useState<AdvancedAppSettings>(
     getAdvancedSettings()
@@ -48,18 +49,20 @@ export const WindowApp = () => {
           sipDisplayName={sipDisplayName}
           sipServerAddress={sipServerAddress}
           calledNumber={[calledNumber, setCalledNumber]}
+          calledName={[calledName, setCalledName]}
           advancedSettings={advancedSettings}
         />
       ),
     },
     {
-      title: "History",
+      title: "Calls",
       content: (
         <CallHistories
           calls={callHistories}
           onDataChange={() => setCallHistories(getCallHistories(sipUsername))}
-          onCallNumber={(number) => {
+          onCallNumber={(number, name) => {
             setCalledNumber(number);
+            setCalledName(name || "");
             setTabIndex(0);
           }}
         />

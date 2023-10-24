@@ -67,6 +67,7 @@ export interface CallHistory {
   callSid: string;
   direction: SipCallDirection;
   number: string;
+  name?: string;
   duration: string;
   timeStamp: number;
   isSaved?: boolean;

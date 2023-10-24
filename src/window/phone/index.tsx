@@ -60,6 +60,7 @@ type PhoneProbs = {
   sipPassword: string;
   sipDisplayName: string;
   calledNumber: [string, React.Dispatch<React.SetStateAction<string>>];
+  calledName: [string, React.Dispatch<React.SetStateAction<string>>];
   advancedSettings: AdvancedAppSettings;
 };
 
@@ -70,6 +71,7 @@ export const Phone = ({
   sipPassword,
   sipDisplayName,
   calledNumber: [calledANumber, setCalledANumber],
+  calledName: [calledAName, setCalledAName],
   advancedSettings,
 }: PhoneProbs) => {
   const [inputNumber, setInputNumber] = useState("");
@@ -125,9 +127,18 @@ export const Phone = ({
 
   useEffect(() => {
     if (calledANumber) {
-      setInputNumber(calledANumber);
+      if (
+        !(
+          calledANumber.startsWith("app-") || calledANumber.startsWith("queue-")
+        )
+      ) {
+        setInputNumber(calledANumber);
+      }
+
+      setAppName(calledAName);
       makeOutboundCall(calledANumber);
       setCalledANumber("");
+      setCalledAName("");
     }
   }, [calledANumber]);
 
@@ -246,6 +257,7 @@ export const Phone = ({
         duration: transform(Date.now(), call.timeStamp),
         timeStamp: call.timeStamp,
         callSid: call.callSid,
+        name: call.name,
       });
     }
     deleteCurrentCall();
@@ -278,13 +290,14 @@ export const Phone = ({
     makeOutboundCall(inputNumber);
   };
 
-  const makeOutboundCall = (number: string) => {
+  const makeOutboundCall = (number: string, name: string = "") => {
     if (sipUA.current && number) {
       setIsCallButtonLoading(true);
       setCallStatus(SipConstants.SESSION_RINGING);
       setSessionDirection("outgoing");
       saveCurrentCall({
         number: number,
+        name,
         direction: "outgoing",
         timeStamp: Date.now(),
         duration: "0",
@@ -458,7 +471,7 @@ export const Phone = ({
                   setAppName(`Queue ${name}`);
                   const calledQueue = `queue-${value}`;
                   setInputNumber("");
-                  makeOutboundCall(calledQueue);
+                  makeOutboundCall(calledQueue, `Queue ${name}`);
                 }}
                 onOpen={() => {
                   return new Promise<IconButtonMenuItems[]>(
@@ -485,7 +498,7 @@ export const Phone = ({
                   setAppName(`App ${name}`);
                   const calledAppId = `app-${value}`;
                   setInputNumber("");
-                  makeOutboundCall(calledAppId);
+                  makeOutboundCall(calledAppId, `App ${name}`);
                 }}
                 onOpen={() => {
                   return new Promise<IconButtonMenuItems[]>(
