@@ -136,7 +136,7 @@ export const Phone = ({
       }
 
       setAppName(calledAName);
-      makeOutboundCall(calledANumber);
+      makeOutboundCall(calledANumber, calledAName);
       setCalledANumber("");
       setCalledAName("");
     }
