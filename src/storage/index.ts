@@ -1,4 +1,8 @@
-import { AppSettings, CallHistory } from "src/common/types";
+import {
+  AdvancedAppSettings,
+  AppSettings,
+  CallHistory,
+} from "src/common/types";
 import { Buffer } from "buffer";
 
 // Settings
@@ -19,6 +23,26 @@ export const getSettings = (): AppSettings => {
     return JSON.parse(planText) as AppSettings;
   }
   return {} as AppSettings;
+};
+
+// Advanced settings
+const ADVANCED_SETTINGS_KET = "AdvancedSettingsKey";
+
+export const saveAddvancedSettings = (settings: AdvancedAppSettings) => {
+  const encoded = Buffer.from(JSON.stringify(settings), "utf-8").toString(
+    "base64"
+  );
+
+  localStorage.setItem(ADVANCED_SETTINGS_KET, encoded);
+};
+
+export const getAdvancedSettings = (): AdvancedAppSettings => {
+  const str = localStorage.getItem(ADVANCED_SETTINGS_KET);
+  if (str) {
+    const planText = Buffer.from(str, "base64").toString("utf-8");
+    return JSON.parse(planText) as AdvancedAppSettings;
+  }
+  return {} as AdvancedAppSettings;
 };
 
 // Call History

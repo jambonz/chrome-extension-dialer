@@ -9,7 +9,7 @@ type RecentsProbs = {
   search: string;
   isSaved?: boolean;
   onDataChange?: (call: CallHistory) => void;
-  onCallNumber?: (number: string) => void;
+  onCallNumber?: (number: string, name: string | undefined) => void;
 };
 
 export const Recents = ({
@@ -53,6 +53,7 @@ export const Recents = ({
         >
           {callHistories.map((c) => (
             <CallHistoryItem
+              isSaved={isSaved}
               call={c}
               onCallNumber={onCallNumber}
               onDataChange={onDataChange}
@@ -61,7 +62,7 @@ export const Recents = ({
         </UnorderedList>
       ) : (
         <Text fontSize="24px" fontWeight="bold">
-          No Call History
+          {isSaved ? "No saved calls" : "No Call History"}
         </Text>
       )}
     </VStack>

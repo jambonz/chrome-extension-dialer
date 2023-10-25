@@ -126,10 +126,10 @@ export default class SipUA extends events.EventEmitter {
     this.emit(SipConstants.UA_STOP);
   }
 
-  call(number: string): void {
+  call(number: string, customHeaders: string[] = []): void {
     let normalizedNumber: string = normalizeNumber(number);
     this.#ua.call(normalizedNumber, {
-      extraHeaders: [`X-Original-Number:${number}`],
+      extraHeaders: [`X-Original-Number:${number}`].concat(customHeaders),
       mediaConstraints: { audio: true, video: false },
       pcConfig: this.#rtcConfig,
     });

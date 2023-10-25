@@ -14,13 +14,25 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
-import { Mic, MicOff, Pause, PhoneOff, Play } from "react-feather";
-import { Call, SipCallDirection, SipClientStatus } from "src/common/types";
+import {
+  GitMerge,
+  List,
+  Mic,
+  MicOff,
+  Pause,
+  PhoneOff,
+  Play,
+  Users,
+} from "react-feather";
+import {
+  AdvancedAppSettings,
+  SipCallDirection,
+  SipClientStatus,
+} from "src/common/types";
 import { SipConstants, SipUA } from "src/lib";
 import IncommingCall from "./incomming-call";
 import DialPad from "./dial-pad";
 import {
-  formatPhoneNumber,
   isSipClientAnswered,
   isSipClientIdle,
   isSipClientRinging,
@@ -31,12 +43,15 @@ import GreenAvatar from "src/imgs/icons/Avatar-Green.svg";
 import "./styles.scss";
 import {
   deleteCurrentCall,
+  getAdvancedSettings,
   getCurrentCall,
   saveCallHistory,
   saveCurrentCall,
 } from "src/storage";
 import { OutGoingCall } from "./outgoing-call";
 import { v4 as uuidv4 } from "uuid";
+import IconButtonMenu, { IconButtonMenuItems } from "src/components/menu";
+import { getApplications, getQueues, getRegisteredUser } from "src/api";
 
 type PhoneProbs = {
   sipDomain: string;
@@ -45,6 +60,8 @@ type PhoneProbs = {
   sipPassword: string;
   sipDisplayName: string;
   calledNumber: [string, React.Dispatch<React.SetStateAction<string>>];
+  calledName: [string, React.Dispatch<React.SetStateAction<string>>];
+  advancedSettings: AdvancedAppSettings;
 };
 
 export const Phone = ({
@@ -54,8 +71,11 @@ export const Phone = ({
   sipPassword,
   sipDisplayName,
   calledNumber: [calledANumber, setCalledANumber],
+  calledName: [calledAName, setCalledAName],
+  advancedSettings,
 }: PhoneProbs) => {
   const [inputNumber, setInputNumber] = useState("");
+  const [appName, setAppName] = useState("");
   const inputNumberRef = useRef(inputNumber);
   const [status, setStatus] = useState<SipClientStatus>("offline");
   const [isConfigured, setIsConfigured] = useState(false);
@@ -70,16 +90,38 @@ export const Phone = ({
   const [isStatusDropdownDisabled, setIsStatusDropdownDisabled] =
     useState(false);
   const [isCallButtonLoading, setIsCallButtonLoading] = useState(false);
+  const [isAdvanceMode, setIsAdvancedMode] = useState(false);
+  const isRestartRef = useRef(false);
+  const sipDomainRef = useRef("");
+  const sipUsernameRef = useRef("");
+  const sipPasswordRef = useRef("");
+  const sipServerAddressRef = useRef("");
+  const sipDisplayNameRef = useRef("");
 
   useEffect(() => {
+    sipDomainRef.current = sipDomain;
+    sipUsernameRef.current = sipUsername;
+    sipPasswordRef.current = sipPassword;
+    sipServerAddressRef.current = sipServerAddress;
+    sipDisplayNameRef.current = sipDisplayName;
     if (sipDomain && sipUsername && sipPassword && sipServerAddress) {
-      createSipClient();
+      if (sipUA.current) {
+        clientGoOffline();
+        isRestartRef.current = true;
+      } else {
+        createSipClient();
+      }
       setIsConfigured(true);
     } else {
       setIsConfigured(false);
       clientGoOffline();
     }
   }, [sipDomain, sipUsername, sipPassword, sipServerAddress, sipDisplayName]);
+
+  useEffect(() => {
+    const advancedSettings = getAdvancedSettings();
+    setIsAdvancedMode(!!advancedSettings.accountSid);
+  }, [advancedSettings]);
 
   useEffect(() => {
     inputNumberRef.current = inputNumber;
@@ -101,9 +143,18 @@ export const Phone = ({
 
   useEffect(() => {
     if (calledANumber) {
-      setInputNumber(calledANumber);
-      makeOutboundCall(calledANumber);
+      if (
+        !(
+          calledANumber.startsWith("app-") || calledANumber.startsWith("queue-")
+        )
+      ) {
+        setInputNumber(calledANumber);
+      }
+
+      setAppName(calledAName);
+      makeOutboundCall(calledANumber, calledAName);
       setCalledANumber("");
+      setCalledAName("");
     }
   }, [calledANumber]);
 
@@ -146,19 +197,17 @@ export const Phone = ({
   };
 
   const createSipClient = () => {
-    clientGoOffline();
-
     const client = {
-      username: `${sipUsername}@${sipDomain}`,
-      password: sipPassword,
-      name: sipDisplayName ?? sipUsername,
+      username: `${sipUsernameRef.current}@${sipDomainRef.current}`,
+      password: sipPasswordRef.current,
+      name: sipDisplayNameRef.current ?? sipUsernameRef.current,
     };
 
     const settings = {
       pcConfig: {
         iceServers: [{ urls: ["stun:stun.l.google.com:19302"] }],
       },
-      wsUri: sipServerAddress,
+      wsUri: sipServerAddressRef.current,
       register: true,
     };
 
@@ -170,7 +219,12 @@ export const Phone = ({
     });
     sipClient.on(SipConstants.UA_UNREGISTERED, (args) => {
       setStatus("offline");
-      clientGoOffline();
+      if (isRestartRef.current) {
+        createSipClient();
+        isRestartRef.current = false;
+      } else {
+        clientGoOffline();
+      }
     });
     // Call Status
     sipClient.on(SipConstants.SESSION_RINGING, (args) => {
@@ -222,6 +276,7 @@ export const Phone = ({
         duration: transform(Date.now(), call.timeStamp),
         timeStamp: call.timeStamp,
         callSid: call.callSid,
+        name: call.name,
       });
     }
     deleteCurrentCall();
@@ -254,19 +309,27 @@ export const Phone = ({
     makeOutboundCall(inputNumber);
   };
 
-  const makeOutboundCall = (number: string) => {
+  const makeOutboundCall = (number: string, name: string = "") => {
     if (sipUA.current && number) {
       setIsCallButtonLoading(true);
       setCallStatus(SipConstants.SESSION_RINGING);
       setSessionDirection("outgoing");
       saveCurrentCall({
         number: number,
+        name,
         direction: "outgoing",
         timeStamp: Date.now(),
         duration: "0",
         callSid: uuidv4(),
       });
-      sipUA.current.call(number);
+      // Add custom header if this is special jambonz call
+      let customHeaders: string[] = [];
+      if (number.startsWith("app-")) {
+        customHeaders = [
+          `X-Application-Sid: ${number.substring(4, number.length)}`,
+        ];
+      }
+      sipUA.current.call(number, customHeaders);
     }
   };
 
@@ -339,7 +402,7 @@ export const Phone = ({
             <VStack spacing={2} alignItems="start" w="full">
               <HStack spacing={2} w="full">
                 <Text fontWeight="bold" fontSize="13px">
-                  {sipDisplayName ?? sipUsername}
+                  {sipDisplayName || sipUsername}
                 </Text>
                 <Circle size="8px" bg={isOnline() ? "green.500" : "gray.500"} />
                 <Select
@@ -377,35 +440,122 @@ export const Phone = ({
             decline={handleDecline}
           />
         ) : (
-          <OutGoingCall number={inputNumber} cancelCall={handleDecline} />
+          <OutGoingCall
+            number={inputNumber || appName}
+            cancelCall={handleDecline}
+          />
         )
       ) : (
         <VStack
-          spacing={4}
+          spacing={2}
           w="full"
           mt={5}
           className={isOnline() ? "" : "blurred"}
         >
-          {isSipClientIdle(callStatus) ? (
-            <Input
-              value={inputNumber}
-              bg="grey.500"
-              fontWeight="bold"
-              fontSize="24px"
-              onChange={(e) => setInputNumber(e.target.value)}
-              textAlign="center"
-            />
-          ) : (
-            <VStack>
-              <Text fontSize="22px" fontWeight="bold">
-                {formatPhoneNumber(inputNumber)}
-              </Text>
-              {seconds >= 0 && (
-                <Text fontSize="15px">
-                  {new Date(seconds * 1000).toISOString().substr(11, 8)}
-                </Text>
-              )}
-            </VStack>
+          {isAdvanceMode && isSipClientIdle(callStatus) && (
+            <HStack spacing={2} align="start" w="full">
+              <IconButtonMenu
+                icon={<Users />}
+                tooltip="Call an online user"
+                noResultLabel="No one else is online"
+                onClick={(_, value) => {
+                  setInputNumber(value);
+                  makeOutboundCall(value);
+                }}
+                onOpen={() => {
+                  return new Promise<IconButtonMenuItems[]>(
+                    (resolve, reject) => {
+                      getRegisteredUser()
+                        .then(({ json }) => {
+                          resolve(
+                            json
+                              .filter((u) => !u.includes(sipUsername))
+                              .map((u) => {
+                                const uName = u.match(/(^.*)@.*/);
+                                return {
+                                  name: uName ? uName[1] : u,
+                                  value: uName ? uName[1] : u,
+                                };
+                              })
+                          );
+                        })
+                        .catch((err) => reject(err));
+                    }
+                  );
+                }}
+              />
+              <IconButtonMenu
+                icon={<List />}
+                tooltip="Take a call from queue"
+                noResultLabel="No calls in queue"
+                onClick={(name, value) => {
+                  setAppName(`Queue ${name}`);
+                  const calledQueue = `queue-${value}`;
+                  setInputNumber("");
+                  makeOutboundCall(calledQueue, `Queue ${name}`);
+                }}
+                onOpen={() => {
+                  return new Promise<IconButtonMenuItems[]>(
+                    (resolve, reject) => {
+                      getQueues()
+                        .then(({ json }) => {
+                          resolve(
+                            json.map((q) => ({
+                              name: `${q.name} (${q.length})`,
+                              value: q.name,
+                            }))
+                          );
+                        })
+                        .catch((err) => reject(err));
+                    }
+                  );
+                }}
+              />
+
+              <IconButtonMenu
+                icon={<GitMerge />}
+                tooltip="Call an application"
+                noResultLabel="No applications"
+                onClick={(name, value) => {
+                  setAppName(`App ${name}`);
+                  const calledAppId = `app-${value}`;
+                  setInputNumber("");
+                  makeOutboundCall(calledAppId, `App ${name}`);
+                }}
+                onOpen={() => {
+                  return new Promise<IconButtonMenuItems[]>(
+                    (resolve, reject) => {
+                      getApplications()
+                        .then(({ json }) => {
+                          resolve(
+                            json.map((a) => ({
+                              name: a.name,
+                              value: a.application_sid,
+                            }))
+                          );
+                        })
+                        .catch((err) => reject(err));
+                    }
+                  );
+                }}
+              />
+            </HStack>
+          )}
+
+          <Input
+            value={inputNumber}
+            bg="grey.500"
+            fontWeight="bold"
+            fontSize="24px"
+            onChange={(e) => setInputNumber(e.target.value)}
+            textAlign="center"
+            isReadOnly={!isSipClientIdle(callStatus)}
+          />
+
+          {!isSipClientIdle(callStatus) && seconds >= 0 && (
+            <Text fontSize="15px">
+              {new Date(seconds * 1000).toISOString().substr(11, 8)}
+            </Text>
           )}
 
           <DialPad handleDigitPress={handleDialPadClick} />

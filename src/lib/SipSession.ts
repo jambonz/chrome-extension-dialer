@@ -57,6 +57,8 @@ export default class SipSession extends events.EventEmitter {
       });
       if (this.#audio.isRemoteAudioPaused() && !this.replaces) {
         this.#audio.playRinging(undefined);
+      } else {
+        this.#audio.playRingback(undefined);
       }
     });
 
@@ -94,12 +96,16 @@ export default class SipSession extends events.EventEmitter {
         this.#audio.playFailed(undefined);
       } else {
         this.#audio.pauseRinging();
+        this.#audio.pauseRingback();
       }
     });
 
     this.#rtcSession.on("ended", (data: EndEvent): void => {
       const { originator, cause, message } = data;
       let description;
+      if (originator === "remote") {
+        this.#audio.playRemotePartyHungup(undefined);
+      }
       if (message && originator === "remote" && message.hasHeader("Reason")) {
         const reason = Grammar.parse(message.getHeader("Reason"), "Reason");
         if (reason) {

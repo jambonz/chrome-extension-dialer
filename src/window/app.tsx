@@ -15,11 +15,15 @@ import Phone from "./phone";
 import Settings from "./settings";
 import { DEFAULT_COLOR_SCHEME } from "src/common/constants";
 import { useEffect, useState } from "react";
-import { getCallHistories, getSettings } from "src/storage";
+import {
+  getAdvancedSettings,
+  getCallHistories,
+  getSettings,
+} from "src/storage";
 
 import jambonz from "src/imgs/jambonz.svg";
 import CallHistories from "./history";
-import { CallHistory } from "src/common/types";
+import { AdvancedAppSettings, CallHistory } from "src/common/types";
 
 export const WindowApp = () => {
   const [sipDomain, setSipDomain] = useState("");
@@ -29,7 +33,11 @@ export const WindowApp = () => {
   const [sipDisplayName, setSipDisplayName] = useState("");
   const [callHistories, setCallHistories] = useState<CallHistory[]>([]);
   const [calledNumber, setCalledNumber] = useState("");
+  const [calledName, setCalledName] = useState("");
   const [tabIndex, setTabIndex] = useState(0);
+  const [advancedSettings, setAdvancedSettings] = useState<AdvancedAppSettings>(
+    getAdvancedSettings()
+  );
   const tabsSettings = [
     {
       title: "Dialer",
@@ -41,17 +49,20 @@ export const WindowApp = () => {
           sipDisplayName={sipDisplayName}
           sipServerAddress={sipServerAddress}
           calledNumber={[calledNumber, setCalledNumber]}
+          calledName={[calledName, setCalledName]}
+          advancedSettings={advancedSettings}
         />
       ),
     },
     {
-      title: "History",
+      title: "Calls",
       content: (
         <CallHistories
           calls={callHistories}
           onDataChange={() => setCallHistories(getCallHistories(sipUsername))}
-          onCallNumber={(number) => {
+          onCallNumber={(number, name) => {
             setCalledNumber(number);
+            setCalledName(name || "");
             setTabIndex(0);
           }}
         />
@@ -75,6 +86,7 @@ export const WindowApp = () => {
 
   const loadSettings = () => {
     const settings = getSettings();
+    setAdvancedSettings(getAdvancedSettings());
     setSipDomain(settings.sipDomain);
     setSipServerAddress(settings.sipServerAddress);
     setSipUsername(settings.sipUsername);
