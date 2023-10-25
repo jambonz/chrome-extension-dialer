@@ -91,11 +91,23 @@ export const Phone = ({
     useState(false);
   const [isCallButtonLoading, setIsCallButtonLoading] = useState(false);
   const [isAdvanceMode, setIsAdvancedMode] = useState(false);
+  const isRestartRef = useRef(false);
+  const sipDomainRef = useRef("");
+  const sipUsernameRef = useRef("");
+  const sipPasswordRef = useRef("");
+  const sipServerAddressRef = useRef("");
+  const sipDisplayNameRef = useRef("");
 
   useEffect(() => {
+    sipDomainRef.current = sipDomain;
+    sipUsernameRef.current = sipUsername;
+    sipPasswordRef.current = sipPassword;
+    sipServerAddressRef.current = sipServerAddress;
+    sipDisplayNameRef.current = sipDisplayName;
     if (sipDomain && sipUsername && sipPassword && sipServerAddress) {
       if (sipUA.current) {
         clientGoOffline();
+        isRestartRef.current = true;
       } else {
         createSipClient();
       }
@@ -186,16 +198,16 @@ export const Phone = ({
 
   const createSipClient = () => {
     const client = {
-      username: `${sipUsername}@${sipDomain}`,
-      password: sipPassword,
-      name: sipDisplayName ?? sipUsername,
+      username: `${sipUsernameRef.current}@${sipDomainRef.current}`,
+      password: sipPasswordRef.current,
+      name: sipDisplayNameRef.current ?? sipUsernameRef.current,
     };
 
     const settings = {
       pcConfig: {
         iceServers: [{ urls: ["stun:stun.l.google.com:19302"] }],
       },
-      wsUri: sipServerAddress,
+      wsUri: sipServerAddressRef.current,
       register: true,
     };
 
@@ -207,7 +219,12 @@ export const Phone = ({
     });
     sipClient.on(SipConstants.UA_UNREGISTERED, (args) => {
       setStatus("offline");
-      clientGoOffline();
+      if (isRestartRef.current) {
+        createSipClient();
+        isRestartRef.current = false;
+      } else {
+        clientGoOffline();
+      }
     });
     // Call Status
     sipClient.on(SipConstants.SESSION_RINGING, (args) => {
