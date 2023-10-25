@@ -207,11 +207,7 @@ export const Phone = ({
     });
     sipClient.on(SipConstants.UA_UNREGISTERED, (args) => {
       setStatus("offline");
-      if (sipDomain && sipUsername && sipPassword && sipServerAddress) {
-        createSipClient();
-      } else {
-        clientGoOffline();
-      }
+      clientGoOffline();
     });
     // Call Status
     sipClient.on(SipConstants.SESSION_RINGING, (args) => {
@@ -444,7 +440,7 @@ export const Phone = ({
               <IconButtonMenu
                 icon={<Users />}
                 tooltip="Call an online user"
-                noResultLabel="No registered users"
+                noResultLabel="No one else is online"
                 onClick={(_, value) => {
                   setInputNumber(value);
                   makeOutboundCall(value);
