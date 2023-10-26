@@ -88,8 +88,6 @@ export const Phone = ({
   const timerRef = useRef<NodeJS.Timer | null>(null);
   const [seconds, setSeconds] = useState(0);
   const secondsRef = useRef(seconds);
-  const [isStatusDropdownDisabled, setIsStatusDropdownDisabled] =
-    useState(false);
   const [isCallButtonLoading, setIsCallButtonLoading] = useState(false);
   const [isAdvanceMode, setIsAdvancedMode] = useState(false);
   const isRestartRef = useRef(false);
@@ -129,12 +127,6 @@ export const Phone = ({
     sessionDirectionRef.current = sessionDirection;
     secondsRef.current = seconds;
   }, [inputNumber, seconds, sessionDirection]);
-
-  useEffect(() => {
-    if (isStatusDropdownDisabled) {
-      setIsStatusDropdownDisabled(false);
-    }
-  }, [status]);
 
   useEffect(() => {
     if (isSipClientIdle(callStatus) && isCallButtonLoading) {
@@ -411,9 +403,7 @@ export const Phone = ({
                   onlabel="Online"
                   offLabel="Offline"
                   initialCheck={status === "online"}
-                  isDisabled={isStatusDropdownDisabled}
                   onChange={(v) => {
-                    setIsStatusDropdownDisabled(true);
                     handleGoOffline(v ? "online" : "offline");
                   }}
                 />
