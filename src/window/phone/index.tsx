@@ -52,6 +52,7 @@ import { OutGoingCall } from "./outgoing-call";
 import { v4 as uuidv4 } from "uuid";
 import IconButtonMenu, { IconButtonMenuItems } from "src/components/menu";
 import { getApplications, getQueues, getRegisteredUser } from "src/api";
+import JambonzSwitch from "src/components/switch";
 
 type PhoneProbs = {
   sipDomain: string;
@@ -405,20 +406,17 @@ export const Phone = ({
                   {sipDisplayName || sipUsername}
                 </Text>
                 <Circle size="8px" bg={isOnline() ? "green.500" : "gray.500"} />
-                <Select
-                  borderRadius="full"
-                  variant="unstyled"
-                  w="auto"
-                  value={status}
-                  onChange={(e) => {
-                    setIsStatusDropdownDisabled(true);
-                    handleGoOffline(e.target.value as SipClientStatus);
-                  }}
+                <Spacer />
+                <JambonzSwitch
+                  onlabel="Online"
+                  offLabel="Offline"
+                  initialCheck={status === "online"}
                   isDisabled={isStatusDropdownDisabled}
-                >
-                  <option value="online">Online</option>
-                  <option value="offline">Offline</option>
-                </Select>
+                  onChange={(v) => {
+                    setIsStatusDropdownDisabled(true);
+                    handleGoOffline(v ? "online" : "offline");
+                  }}
+                />
               </HStack>
               <Text fontWeight="bold" w="full">
                 {`${sipUsername}@${sipDomain}`}
