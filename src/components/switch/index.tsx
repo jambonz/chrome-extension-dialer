@@ -53,6 +53,7 @@ function JambonzSwitch({
         borderRadius="full"
         transform="translateY(-50%)"
         transition="0.2s ease"
+        style={{ boxShadow: "0 3px 4px rgba(0,0,0,0.5)" }}
       ></Box>
     </Box>
   );
