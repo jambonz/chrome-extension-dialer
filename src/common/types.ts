@@ -73,5 +73,12 @@ export interface CallHistory {
   isSaved?: boolean;
 }
 
-export type SipClientStatus = "online" | "offline";
+export type SipClientStatus =
+  | "start"
+  | "stop"
+  | "connecting"
+  | "connected"
+  | "disconnected"
+  | "online"
+  | "offline";
 export type SipCallDirection = "" | "outgoing" | "incoming";

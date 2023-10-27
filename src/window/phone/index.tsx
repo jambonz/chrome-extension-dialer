@@ -12,6 +12,7 @@ import {
   Text,
   Tooltip,
   VStack,
+  useToast,
 } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -52,6 +53,8 @@ import { OutGoingCall } from "./outgoing-call";
 import { v4 as uuidv4 } from "uuid";
 import IconButtonMenu, { IconButtonMenuItems } from "src/components/menu";
 import { getApplications, getQueues, getRegisteredUser } from "src/api";
+import JambonzSwitch from "src/components/switch";
+import { DEFAULT_TOAST_DURATION } from "src/common/constants";
 
 type PhoneProbs = {
   sipDomain: string;
@@ -87,8 +90,6 @@ export const Phone = ({
   const timerRef = useRef<NodeJS.Timer | null>(null);
   const [seconds, setSeconds] = useState(0);
   const secondsRef = useRef(seconds);
-  const [isStatusDropdownDisabled, setIsStatusDropdownDisabled] =
-    useState(false);
   const [isCallButtonLoading, setIsCallButtonLoading] = useState(false);
   const [isAdvanceMode, setIsAdvancedMode] = useState(false);
   const isRestartRef = useRef(false);
@@ -97,6 +98,8 @@ export const Phone = ({
   const sipPasswordRef = useRef("");
   const sipServerAddressRef = useRef("");
   const sipDisplayNameRef = useRef("");
+  const [isForceChangeUaStatus, setIsForceChangeUaStatus] = useState(false);
+  const toast = useToast();
 
   useEffect(() => {
     sipDomainRef.current = sipDomain;
@@ -130,12 +133,6 @@ export const Phone = ({
   }, [inputNumber, seconds, sessionDirection]);
 
   useEffect(() => {
-    if (isStatusDropdownDisabled) {
-      setIsStatusDropdownDisabled(false);
-    }
-  }, [status]);
-
-  useEffect(() => {
     if (isSipClientIdle(callStatus) && isCallButtonLoading) {
       setIsCallButtonLoading(false);
     }
@@ -157,6 +154,10 @@ export const Phone = ({
       setCalledAName("");
     }
   }, [calledANumber]);
+
+  useEffect(() => {
+    setIsForceChangeUaStatus(false);
+  }, [status]);
 
   // useEffect(() => {
   //   chrome.runtime.onMessage.addListener(function (request) {
@@ -225,6 +226,22 @@ export const Phone = ({
       } else {
         clientGoOffline();
       }
+      toast({
+        title: `User is not registered${args.cause ? `, ${args.cause}` : ""}`,
+        status: "warning",
+        duration: DEFAULT_TOAST_DURATION,
+        isClosable: true,
+      });
+    });
+
+    sipClient.on(SipConstants.UA_DISCONNECTED, (args) => {
+      setStatus("disconnected");
+      toast({
+        title: `Cannot connect to ${sipServerAddress}`,
+        status: "warning",
+        duration: DEFAULT_TOAST_DURATION,
+        isClosable: true,
+      });
     });
     // Call Status
     sipClient.on(SipConstants.SESSION_RINGING, (args) => {
@@ -405,20 +422,16 @@ export const Phone = ({
                   {sipDisplayName || sipUsername}
                 </Text>
                 <Circle size="8px" bg={isOnline() ? "green.500" : "gray.500"} />
-                <Select
-                  borderRadius="full"
-                  variant="unstyled"
-                  w="auto"
-                  value={status}
-                  onChange={(e) => {
-                    setIsStatusDropdownDisabled(true);
-                    handleGoOffline(e.target.value as SipClientStatus);
+                <Spacer />
+                <JambonzSwitch
+                  onlabel="Online"
+                  offLabel="Offline"
+                  initialCheck={isOnline() || isForceChangeUaStatus}
+                  onChange={(v) => {
+                    setIsForceChangeUaStatus(true);
+                    handleGoOffline(v ? "online" : "offline");
                   }}
-                  isDisabled={isStatusDropdownDisabled}
-                >
-                  <option value="online">Online</option>
-                  <option value="offline">Offline</option>
-                </Select>
+                />
               </HStack>
               <Text fontWeight="bold" w="full">
                 {`${sipUsername}@${sipDomain}`}
