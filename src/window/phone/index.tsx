@@ -12,6 +12,7 @@ import {
   Text,
   Tooltip,
   VStack,
+  useToast,
 } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -53,6 +54,7 @@ import { v4 as uuidv4 } from "uuid";
 import IconButtonMenu, { IconButtonMenuItems } from "src/components/menu";
 import { getApplications, getQueues, getRegisteredUser } from "src/api";
 import JambonzSwitch from "src/components/switch";
+import { DEFAULT_TOAST_DURATION } from "src/common/constants";
 
 type PhoneProbs = {
   sipDomain: string;
@@ -96,6 +98,8 @@ export const Phone = ({
   const sipPasswordRef = useRef("");
   const sipServerAddressRef = useRef("");
   const sipDisplayNameRef = useRef("");
+  const [isForceChangeUaStatus, setIsForceChangeUaStatus] = useState(false);
+  const toast = useToast();
 
   useEffect(() => {
     sipDomainRef.current = sipDomain;
@@ -150,6 +154,10 @@ export const Phone = ({
       setCalledAName("");
     }
   }, [calledANumber]);
+
+  useEffect(() => {
+    setIsForceChangeUaStatus(false);
+  }, [status]);
 
   // useEffect(() => {
   //   chrome.runtime.onMessage.addListener(function (request) {
@@ -218,6 +226,16 @@ export const Phone = ({
       } else {
         clientGoOffline();
       }
+      toast({
+        title: `User is not registered${args.cause ? `, ${args.cause}` : ""}`,
+        status: "warning",
+        duration: DEFAULT_TOAST_DURATION,
+        isClosable: true,
+      });
+    });
+
+    sipClient.on(SipConstants.UA_DISCONNECTED, (args) => {
+      setStatus("disconnected");
     });
     // Call Status
     sipClient.on(SipConstants.SESSION_RINGING, (args) => {
@@ -402,8 +420,9 @@ export const Phone = ({
                 <JambonzSwitch
                   onlabel="Online"
                   offLabel="Offline"
-                  initialCheck={status === "online"}
+                  initialCheck={isOnline() || isForceChangeUaStatus}
                   onChange={(v) => {
+                    setIsForceChangeUaStatus(true);
                     handleGoOffline(v ? "online" : "offline");
                   }}
                 />

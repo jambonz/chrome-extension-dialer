@@ -14,7 +14,6 @@ import {
 import { useEffect, useState } from "react";
 import PasswordInput from "src/components/password-input";
 import { getSettings, saveSettings } from "src/storage";
-import InfoIcon from "src/imgs/icons/Info.svg";
 import ResetIcon from "src/imgs/icons/Reset.svg";
 import { AppSettings } from "src/common/types";
 import { DEFAULT_TOAST_DURATION } from "src/common/constants";
