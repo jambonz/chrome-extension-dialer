@@ -236,6 +236,12 @@ export const Phone = ({
 
     sipClient.on(SipConstants.UA_DISCONNECTED, (args) => {
       setStatus("disconnected");
+      toast({
+        title: `Cannot connect to ${sipServerAddress}`,
+        status: "warning",
+        duration: DEFAULT_TOAST_DURATION,
+        isClosable: true,
+      });
     });
     // Call Status
     sipClient.on(SipConstants.SESSION_RINGING, (args) => {
