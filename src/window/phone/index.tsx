@@ -315,9 +315,8 @@ export const Phone = ({
   }
 
   const handleDialPadClick = (value: string) => {
-    if (isSipClientIdle(callStatus)) {
-      setInputNumber((prev) => prev + value);
-    } else if (isSipClientAnswered(callStatus)) {
+    setInputNumber((prev) => prev + value);
+    if (isSipClientAnswered(callStatus)) {
       sipUA.current?.dtmf(value, undefined);
     }
   };
@@ -414,9 +413,9 @@ export const Phone = ({
     <Center flexDirection="column">
       {isConfigured ? (
         <>
-          <HStack spacing={2} boxShadow="md" w="full" p={2} borderRadius={5}>
-            <Image src={isOnline() ? GreenAvatar : Avatar} />
-            <VStack spacing={2} alignItems="start" w="full">
+          <HStack spacing={2} boxShadow="md" w="full" borderRadius={5} p={2}>
+            <Image src={isOnline() ? GreenAvatar : Avatar} boxSize="50px" />
+            <VStack alignItems="start" w="full" spacing={0}>
               <HStack spacing={2} w="full">
                 <Text fontWeight="bold" fontSize="13px">
                   {sipDisplayName || sipUsername}

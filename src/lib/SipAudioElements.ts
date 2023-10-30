@@ -5,6 +5,7 @@ export default class SipAudioElements {
   #busy: HTMLAudioElement;
   #remote: HTMLAudioElement;
   #hungup: HTMLAudioElement;
+  #localHungup: HTMLAudioElement;
 
   constructor() {
     this.#ringing = new Audio(chrome.runtime.getURL("audios/ringing.mp3"));
@@ -21,7 +22,20 @@ export default class SipAudioElements {
       chrome.runtime.getURL("audios/remote-party-hungup-tone.mp3")
     );
     this.#hungup.volume = 0.3;
+    this.#localHungup = new Audio(
+      chrome.runtime.getURL("audios/local-party-hungup-tone.mp3")
+    );
+    this.#localHungup.volume = 0.3;
     this.#remote = new Audio();
+  }
+
+  playLocalHungup(volume: number | undefined) {
+    this.pauseRingback();
+    this.pauseRinging();
+    if (volume) {
+      this.#localHungup.volume = volume;
+    }
+    this.#localHungup.play();
   }
 
   playRinging(volume: number | undefined): void {
