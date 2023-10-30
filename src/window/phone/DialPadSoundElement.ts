@@ -8,7 +8,6 @@ export default class DialPadAudioElements {
         chrome.runtime.getURL(`audios/dtmf-${encodeURIComponent(i)}.mp3`)
       );
       const audio = this.keySounds[i];
-      console.log({ i, audio }, "xquanluu");
       if (audio) {
         audio.volume = 0.5;
       }

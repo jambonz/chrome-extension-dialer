@@ -30,7 +30,6 @@ export const DialPad = ({ handleDigitPress }: DialPadProbs) => {
   useEffect(() => {
     document.addEventListener("keydown", handleKeyDown);
     return () => {
-      console.log("xquanluu1231");
       document.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
