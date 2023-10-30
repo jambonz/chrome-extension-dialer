@@ -105,6 +105,8 @@ export default class SipSession extends events.EventEmitter {
       let description;
       if (originator === "remote") {
         this.#audio.playRemotePartyHungup(undefined);
+      } else {
+        this.#audio.playLocalHungup(undefined);
       }
       if (message && originator === "remote" && message.hasHeader("Reason")) {
         const reason = Grammar.parse(message.getHeader("Reason"), "Reason");
