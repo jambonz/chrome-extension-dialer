@@ -156,7 +156,9 @@ export const Phone = ({
   }, [calledANumber]);
 
   useEffect(() => {
-    setIsForceChangeUaStatus(false);
+    if (status === "online" || status === "offline") {
+      setIsForceChangeUaStatus(false);
+    }
   }, [status]);
 
   // useEffect(() => {
@@ -236,12 +238,14 @@ export const Phone = ({
 
     sipClient.on(SipConstants.UA_DISCONNECTED, (args) => {
       setStatus("disconnected");
-      toast({
-        title: `Cannot connect to ${sipServerAddress}`,
-        status: "warning",
-        duration: DEFAULT_TOAST_DURATION,
-        isClosable: true,
-      });
+      if (args.error) {
+        toast({
+          title: `Cannot connect to ${sipServerAddress}, ${args.reason}`,
+          status: "warning",
+          duration: DEFAULT_TOAST_DURATION,
+          isClosable: true,
+        });
+      }
     });
     // Call Status
     sipClient.on(SipConstants.SESSION_RINGING, (args) => {
@@ -423,6 +427,7 @@ export const Phone = ({
                 <Circle size="8px" bg={isOnline() ? "green.500" : "gray.500"} />
                 <Spacer />
                 <JambonzSwitch
+                  isDisabled={isForceChangeUaStatus}
                   onlabel="Online"
                   offLabel="Offline"
                   initialCheck={isOnline() || isForceChangeUaStatus}
