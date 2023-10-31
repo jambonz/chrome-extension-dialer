@@ -1,6 +1,6 @@
 import { Box, Button, HStack, VStack } from "@chakra-ui/react";
 import DialPadAudioElements from "./DialPadSoundElement";
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type DialPadProbs = {
   handleDigitPress: (digit: string) => void;
@@ -9,6 +9,8 @@ type DialPadProbs = {
 const keySounds = new DialPadAudioElements();
 
 export const DialPad = ({ handleDigitPress }: DialPadProbs) => {
+  const selfRef = useRef<HTMLDivElement | null>(null);
+  const isVisibleRef = useRef(false);
   const buttons = [
     ["1", "2", "3"],
     ["4", "5", "6"],
@@ -22,20 +24,36 @@ export const DialPad = ({ handleDigitPress }: DialPadProbs) => {
         e.key
       )
     ) {
-      keySounds?.playKeyTone(e.key);
-      handleDigitPress(e.key);
+      if (isVisibleRef.current) {
+        keySounds?.playKeyTone(e.key);
+        handleDigitPress(e.key);
+      }
     }
   };
 
   useEffect(() => {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        isVisibleRef.current = entry.isIntersecting;
+      },
+      {
+        threshold: 0.5,
+      }
+    );
+    if (selfRef.current) {
+      observer.observe(selfRef.current);
+    }
     document.addEventListener("keydown", handleKeyDown);
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
+      if (selfRef.current) {
+        observer.unobserve(selfRef.current);
+      }
     };
   }, []);
 
   return (
-    <Box p={2} w="full">
+    <Box p={2} w="full" ref={selfRef}>
       <VStack w="full" bg="grey.500" spacing={0.5}>
         {buttons.map((row, rowIndex) => (
           <HStack key={rowIndex} justifyContent="space-between" spacing={0.5}>

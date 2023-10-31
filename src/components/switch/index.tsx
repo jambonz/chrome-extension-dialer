@@ -5,12 +5,14 @@ type JambonzSwitchProbs = {
   onlabel: string;
   offLabel: string;
   initialCheck: boolean;
+  isDisabled?: boolean;
   onChange: (value: boolean) => void;
 };
 function JambonzSwitch({
   onlabel,
   offLabel,
   initialCheck,
+  isDisabled = false,
   onChange,
 }: JambonzSwitchProbs) {
   const [isToggled, setToggled] = useState(initialCheck);
@@ -24,12 +26,14 @@ function JambonzSwitch({
       position="relative"
       w="90px"
       h="30px"
-      bg={isToggled ? "green.500" : "grey.500"}
+      bg={isToggled && !isDisabled ? "green.500" : "grey.500"}
       borderRadius="full"
       onClick={() => {
-        const value = !isToggled;
-        setToggled(value);
-        onChange(value);
+        if (!isDisabled) {
+          const value = !isToggled;
+          setToggled(value);
+          onChange(value);
+        }
       }}
       _hover={{ cursor: "pointer" }}
     >
