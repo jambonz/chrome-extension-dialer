@@ -1,9 +1,9 @@
 import { Box, Button, HStack, VStack } from "@chakra-ui/react";
 import DialPadAudioElements from "./DialPadSoundElement";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 
 type DialPadProbs = {
-  handleDigitPress: (digit: string) => void;
+  handleDigitPress: (digit: string, fromKeyboard: boolean) => void;
 };
 
 const keySounds = new DialPadAudioElements();
@@ -26,7 +26,7 @@ export const DialPad = ({ handleDigitPress }: DialPadProbs) => {
     ) {
       if (isVisibleRef.current) {
         keySounds?.playKeyTone(e.key);
-        handleDigitPress(e.key);
+        handleDigitPress(e.key, true);
       }
     }
   };
@@ -62,7 +62,7 @@ export const DialPad = ({ handleDigitPress }: DialPadProbs) => {
                 key={num}
                 onClick={() => {
                   keySounds?.playKeyTone(num);
-                  handleDigitPress(num);
+                  handleDigitPress(num, false);
                 }}
                 size="lg"
                 p={0}
