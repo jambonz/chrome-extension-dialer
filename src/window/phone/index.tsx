@@ -99,6 +99,7 @@ export const Phone = ({
   const sipServerAddressRef = useRef("");
   const sipDisplayNameRef = useRef("");
   const [isForceChangeUaStatus, setIsForceChangeUaStatus] = useState(false);
+  const isInputNumberFocusRef = useRef(false);
   const toast = useToast();
 
   useEffect(() => {
@@ -318,8 +319,11 @@ export const Phone = ({
     return `${hours1}:${minutes1}:${seconds1}`;
   }
 
-  const handleDialPadClick = (value: string) => {
-    setInputNumber((prev) => prev + value);
+  const handleDialPadClick = (value: string, fromKeyboad: boolean) => {
+    if (!(isInputNumberFocusRef.current && fromKeyboad)) {
+      setInputNumber((prev) => prev + value);
+    }
+
     if (isSipClientAnswered(callStatus)) {
       sipUA.current?.dtmf(value, undefined);
     }
@@ -564,7 +568,15 @@ export const Phone = ({
             bg="grey.500"
             fontWeight="bold"
             fontSize="24px"
-            onChange={(e) => setInputNumber(e.target.value)}
+            onChange={(e) => {
+              setInputNumber(e.target.value);
+            }}
+            onFocus={() => {
+              isInputNumberFocusRef.current = true;
+            }}
+            onBlur={() => {
+              isInputNumberFocusRef.current = false;
+            }}
             textAlign="center"
             isReadOnly={!isSipClientIdle(callStatus)}
           />
