@@ -422,28 +422,31 @@ export const Phone = ({
       {isConfigured ? (
         <>
           <HStack spacing={2} boxShadow="md" w="full" borderRadius={5} p={2}>
-            <Image src={isOnline() ? GreenAvatar : Avatar} boxSize="50px" />
+            <Image src={isOnline() ? GreenAvatar : Avatar} boxSize="35px" />
             <VStack alignItems="start" w="full" spacing={0}>
               <HStack spacing={2} w="full">
                 <Text fontWeight="bold" fontSize="13px">
                   {sipDisplayName || sipUsername}
                 </Text>
                 <Circle size="8px" bg={isOnline() ? "green.500" : "gray.500"} />
-                <Spacer />
-                <JambonzSwitch
-                  isDisabled={isForceChangeUaStatus}
-                  onlabel="Online"
-                  offLabel="Offline"
-                  initialCheck={isOnline() || isForceChangeUaStatus}
-                  onChange={(v) => {
-                    setIsForceChangeUaStatus(true);
-                    handleGoOffline(v ? "online" : "offline");
-                  }}
-                />
               </HStack>
               <Text fontWeight="bold" w="full">
                 {`${sipUsername}@${sipDomain}`}
               </Text>
+            </VStack>
+
+            <Spacer />
+            <VStack h="full" align="center">
+              <JambonzSwitch
+                isDisabled={isForceChangeUaStatus}
+                onlabel="Online"
+                offLabel="Offline"
+                initialCheck={isOnline() || isForceChangeUaStatus}
+                onChange={(v) => {
+                  setIsForceChangeUaStatus(true);
+                  handleGoOffline(v ? "online" : "offline");
+                }}
+              />
             </VStack>
           </HStack>
         </>
