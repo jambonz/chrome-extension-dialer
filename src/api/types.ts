@@ -34,3 +34,14 @@ export interface Queue {
   name: string;
   length: number;
 }
+
+export interface RegisteredUser {
+  name: string;
+  contact: string;
+  expiryTime: number;
+  protocol: string;
+  allow_direct_app_calling: boolean;
+  allow_direct_queue_calling: boolean;
+  allow_direct_user_calling: boolean;
+  registered_status: string;
+}

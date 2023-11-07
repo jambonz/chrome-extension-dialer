@@ -52,9 +52,15 @@ import {
 import { OutGoingCall } from "./outgoing-call";
 import { v4 as uuidv4 } from "uuid";
 import IconButtonMenu, { IconButtonMenuItems } from "src/components/menu";
-import { getApplications, getQueues, getRegisteredUser } from "src/api";
+import {
+  getApplications,
+  getQueues,
+  getRegisteredUser,
+  getSelfRegisteredUser,
+} from "src/api";
 import JambonzSwitch from "src/components/switch";
 import { DEFAULT_TOAST_DURATION } from "src/common/constants";
+import { RegisteredUser } from "src/api/types";
 
 type PhoneProbs = {
   sipDomain: string;
@@ -100,6 +106,13 @@ export const Phone = ({
   const sipDisplayNameRef = useRef("");
   const [isForceChangeUaStatus, setIsForceChangeUaStatus] = useState(false);
   const isInputNumberFocusRef = useRef(false);
+  const [registeredUser, setRegisteredUser] = useState<Partial<RegisteredUser>>(
+    {
+      allow_direct_app_calling: false,
+      allow_direct_queue_calling: false,
+      allow_direct_user_calling: false,
+    }
+  );
   const toast = useToast();
 
   useEffect(() => {
@@ -120,6 +133,9 @@ export const Phone = ({
       setIsConfigured(false);
       clientGoOffline();
     }
+    getSelfRegisteredUser(sipUsernameRef.current).then(({ json }) => {
+      setRegisteredUser(json);
+    });
   }, [sipDomain, sipUsername, sipPassword, sipServerAddress, sipDisplayName]);
 
   useEffect(() => {
@@ -161,6 +177,14 @@ export const Phone = ({
       setIsForceChangeUaStatus(false);
     }
   }, [status]);
+
+  useEffect(() => {
+    setInterval(() => {
+      getSelfRegisteredUser(sipUsernameRef.current).then(({ json }) => {
+        setRegisteredUser(json);
+      });
+    }, 20000);
+  }, []);
 
   // useEffect(() => {
   //   chrome.runtime.onMessage.addListener(function (request) {
@@ -478,91 +502,98 @@ export const Phone = ({
         >
           {isAdvanceMode && isSipClientIdle(callStatus) && (
             <HStack spacing={2} align="start" w="full">
-              <IconButtonMenu
-                icon={<Users />}
-                tooltip="Call an online user"
-                noResultLabel="No one else is online"
-                onClick={(_, value) => {
-                  setInputNumber(value);
-                  makeOutboundCall(value);
-                }}
-                onOpen={() => {
-                  return new Promise<IconButtonMenuItems[]>(
-                    (resolve, reject) => {
-                      getRegisteredUser()
-                        .then(({ json }) => {
-                          resolve(
-                            json
-                              .filter((u) => !u.includes(sipUsername))
-                              .map((u) => {
-                                const uName = u.match(/(^.*)@.*/);
-                                return {
-                                  name: uName ? uName[1] : u,
-                                  value: uName ? uName[1] : u,
-                                };
-                              })
-                          );
-                        })
-                        .catch((err) => reject(err));
-                    }
-                  );
-                }}
-              />
-              <IconButtonMenu
-                icon={<List />}
-                tooltip="Take a call from queue"
-                noResultLabel="No calls in queue"
-                onClick={(name, value) => {
-                  setAppName(`Queue ${name}`);
-                  const calledQueue = `queue-${value}`;
-                  setInputNumber("");
-                  makeOutboundCall(calledQueue, `Queue ${name}`);
-                }}
-                onOpen={() => {
-                  return new Promise<IconButtonMenuItems[]>(
-                    (resolve, reject) => {
-                      getQueues()
-                        .then(({ json }) => {
-                          resolve(
-                            json.map((q) => ({
-                              name: `${q.name} (${q.length})`,
-                              value: q.name,
-                            }))
-                          );
-                        })
-                        .catch((err) => reject(err));
-                    }
-                  );
-                }}
-              />
+              {registeredUser.allow_direct_user_calling && (
+                <IconButtonMenu
+                  icon={<Users />}
+                  tooltip="Call an online user"
+                  noResultLabel="No one else is online"
+                  onClick={(_, value) => {
+                    setInputNumber(value);
+                    makeOutboundCall(value);
+                  }}
+                  onOpen={() => {
+                    return new Promise<IconButtonMenuItems[]>(
+                      (resolve, reject) => {
+                        getRegisteredUser()
+                          .then(({ json }) => {
+                            resolve(
+                              json
+                                .filter((u) => !u.includes(sipUsername))
+                                .map((u) => {
+                                  const uName = u.match(/(^.*)@.*/);
+                                  return {
+                                    name: uName ? uName[1] : u,
+                                    value: uName ? uName[1] : u,
+                                  };
+                                })
+                            );
+                          })
+                          .catch((err) => reject(err));
+                      }
+                    );
+                  }}
+                />
+              )}
 
-              <IconButtonMenu
-                icon={<GitMerge />}
-                tooltip="Call an application"
-                noResultLabel="No applications"
-                onClick={(name, value) => {
-                  setAppName(`App ${name}`);
-                  const calledAppId = `app-${value}`;
-                  setInputNumber("");
-                  makeOutboundCall(calledAppId, `App ${name}`);
-                }}
-                onOpen={() => {
-                  return new Promise<IconButtonMenuItems[]>(
-                    (resolve, reject) => {
-                      getApplications()
-                        .then(({ json }) => {
-                          resolve(
-                            json.map((a) => ({
-                              name: a.name,
-                              value: a.application_sid,
-                            }))
-                          );
-                        })
-                        .catch((err) => reject(err));
-                    }
-                  );
-                }}
-              />
+              {registeredUser.allow_direct_queue_calling && (
+                <IconButtonMenu
+                  icon={<List />}
+                  tooltip="Take a call from queue"
+                  noResultLabel="No calls in queue"
+                  onClick={(name, value) => {
+                    setAppName(`Queue ${name}`);
+                    const calledQueue = `queue-${value}`;
+                    setInputNumber("");
+                    makeOutboundCall(calledQueue, `Queue ${name}`);
+                  }}
+                  onOpen={() => {
+                    return new Promise<IconButtonMenuItems[]>(
+                      (resolve, reject) => {
+                        getQueues()
+                          .then(({ json }) => {
+                            resolve(
+                              json.map((q) => ({
+                                name: `${q.name} (${q.length})`,
+                                value: q.name,
+                              }))
+                            );
+                          })
+                          .catch((err) => reject(err));
+                      }
+                    );
+                  }}
+                />
+              )}
+
+              {registeredUser.allow_direct_app_calling && (
+                <IconButtonMenu
+                  icon={<GitMerge />}
+                  tooltip="Call an application"
+                  noResultLabel="No applications"
+                  onClick={(name, value) => {
+                    setAppName(`App ${name}`);
+                    const calledAppId = `app-${value}`;
+                    setInputNumber("");
+                    makeOutboundCall(calledAppId, `App ${name}`);
+                  }}
+                  onOpen={() => {
+                    return new Promise<IconButtonMenuItems[]>(
+                      (resolve, reject) => {
+                        getApplications()
+                          .then(({ json }) => {
+                            resolve(
+                              json.map((a) => ({
+                                name: a.name,
+                                value: a.application_sid,
+                              }))
+                            );
+                          })
+                          .catch((err) => reject(err));
+                      }
+                    );
+                  }}
+                />
+              )}
             </HStack>
           )}
 
