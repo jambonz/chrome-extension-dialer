@@ -3,6 +3,7 @@ import {
   FetchError,
   FetchTransport,
   Queue,
+  RegisteredUser,
   StatusCodes,
 } from "./types";
 import { MSG_SOMETHING_WRONG } from "./constants";
@@ -142,5 +143,12 @@ export const getQueues = () => {
   const advancedSettings = getAdvancedSettings();
   return getFetch<Queue[]>(
     `${advancedSettings.apiServer}/Accounts/${advancedSettings.accountSid}/Queues`
+  );
+};
+
+export const getSelfRegisteredUser = (username: string) => {
+  const advancedSettings = getAdvancedSettings();
+  return getFetch<RegisteredUser>(
+    `${advancedSettings.apiServer}/Accounts/${advancedSettings.accountSid}/RegisteredSipUsers/${username}`
   );
 };
