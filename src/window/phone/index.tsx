@@ -133,6 +133,9 @@ export const Phone = ({
       setIsConfigured(false);
       clientGoOffline();
     }
+    getSelfRegisteredUser(sipUsernameRef.current).then(({ json }) => {
+      setRegisteredUser(json);
+    });
   }, [sipDomain, sipUsername, sipPassword, sipServerAddress, sipDisplayName]);
 
   useEffect(() => {
@@ -176,9 +179,6 @@ export const Phone = ({
   }, [status]);
 
   useEffect(() => {
-    getSelfRegisteredUser(sipUsernameRef.current).then(({ json }) => {
-      setRegisteredUser(json);
-    });
     setInterval(() => {
       getSelfRegisteredUser(sipUsernameRef.current).then(({ json }) => {
         setRegisteredUser(json);
