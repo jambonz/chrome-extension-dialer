@@ -1,4 +1,5 @@
 import {
+  Box,
   IconButton,
   Menu,
   MenuButton,
@@ -54,11 +55,13 @@ export const IconButtonMenu = ({
             <Spinner color="jambonz.500" size="xs" />
           </MenuItem>
         ) : items.length > 0 ? (
-          items.map((i, idx) => (
-            <MenuItem key={idx} onClick={() => onClick(i.name, i.value)}>
-              {i.name}
-            </MenuItem>
-          ))
+          <Box overflowY="auto" maxH="250px">
+            {items.map((i, idx) => (
+              <MenuItem key={idx} onClick={() => onClick(i.name, i.value)}>
+                {i.name}
+              </MenuItem>
+            ))}
+          </Box>
         ) : (
           <MenuItem>{noResultLabel}</MenuItem>
         )}

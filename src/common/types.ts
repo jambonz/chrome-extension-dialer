@@ -79,6 +79,6 @@ export type SipClientStatus =
   | "connecting"
   | "connected"
   | "disconnected"
-  | "online"
-  | "offline";
+  | "registered"
+  | "unregistered";
 export type SipCallDirection = "" | "outgoing" | "incoming";

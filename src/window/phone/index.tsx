@@ -44,7 +44,6 @@ import GreenAvatar from "src/imgs/icons/Avatar-Green.svg";
 import "./styles.scss";
 import {
   deleteCurrentCall,
-  getAdvancedSettings,
   getCurrentCall,
   saveCallHistory,
   saveCurrentCall,
@@ -86,7 +85,7 @@ export const Phone = ({
   const [inputNumber, setInputNumber] = useState("");
   const [appName, setAppName] = useState("");
   const inputNumberRef = useRef(inputNumber);
-  const [status, setStatus] = useState<SipClientStatus>("offline");
+  const [status, setStatus] = useState<SipClientStatus>("stop");
   const [isConfigured, setIsConfigured] = useState(false);
   const [callStatus, setCallStatus] = useState(SipConstants.SESSION_ENDED);
   const [sessionDirection, setSessionDirection] =
@@ -104,7 +103,9 @@ export const Phone = ({
   const sipPasswordRef = useRef("");
   const sipServerAddressRef = useRef("");
   const sipDisplayNameRef = useRef("");
-  const [isForceChangeUaStatus, setIsForceChangeUaStatus] = useState(false);
+  const [isSwitchingUserStatus, setIsSwitchingUserStatus] = useState(true);
+  const [isOnline, setIsOnline] = useState(false);
+  const unregisteredReasonRef = useRef("");
   const isInputNumberFocusRef = useRef(false);
   const [registeredUser, setRegisteredUser] = useState<Partial<RegisteredUser>>(
     {
@@ -123,8 +124,12 @@ export const Phone = ({
     sipDisplayNameRef.current = sipDisplayName;
     if (sipDomain && sipUsername && sipPassword && sipServerAddress) {
       if (sipUA.current) {
-        clientGoOffline();
-        isRestartRef.current = true;
+        if (sipUA.current.isConnected()) {
+          clientGoOffline();
+          isRestartRef.current = true;
+        } else {
+          createSipClient();
+        }
       } else {
         createSipClient();
       }
@@ -133,14 +138,12 @@ export const Phone = ({
       setIsConfigured(false);
       clientGoOffline();
     }
-    getSelfRegisteredUser(sipUsernameRef.current).then(({ json }) => {
-      setRegisteredUser(json);
-    });
+    fetchRegisterUser();
   }, [sipDomain, sipUsername, sipPassword, sipServerAddress, sipDisplayName]);
 
   useEffect(() => {
-    const advancedSettings = getAdvancedSettings();
     setIsAdvancedMode(!!advancedSettings.accountSid);
+    fetchRegisterUser();
   }, [advancedSettings]);
 
   useEffect(() => {
@@ -173,17 +176,16 @@ export const Phone = ({
   }, [calledANumber]);
 
   useEffect(() => {
-    if (status === "online" || status === "offline") {
-      setIsForceChangeUaStatus(false);
+    if (status === "registered" || status === "disconnected") {
+      setIsSwitchingUserStatus(false);
+      setIsOnline(status === "registered");
     }
   }, [status]);
 
   useEffect(() => {
     setInterval(() => {
-      getSelfRegisteredUser(sipUsernameRef.current).then(({ json }) => {
-        setRegisteredUser(json);
-      });
-    }, 20000);
+      fetchRegisterUser();
+    }, 10_000);
   }, []);
 
   // useEffect(() => {
@@ -209,6 +211,20 @@ export const Phone = ({
   //   }
   // };
 
+  const fetchRegisterUser = () => {
+    getSelfRegisteredUser(sipUsernameRef.current)
+      .then(({ json }) => {
+        setRegisteredUser(json);
+      })
+      .catch(() => {
+        setRegisteredUser({
+          allow_direct_app_calling: false,
+          allow_direct_queue_calling: false,
+          allow_direct_user_calling: false,
+        });
+      });
+  };
+
   const startCallDurationCounter = () => {
     stopCallDurationCounter();
     timerRef.current = setInterval(() => {
@@ -225,6 +241,7 @@ export const Phone = ({
   };
 
   const createSipClient = () => {
+    setIsSwitchingUserStatus(true);
     const client = {
       username: `${sipUsernameRef.current}@${sipDomainRef.current}`,
       password: sipPasswordRef.current,
@@ -243,26 +260,34 @@ export const Phone = ({
 
     // UA Status
     sipClient.on(SipConstants.UA_REGISTERED, (args) => {
-      setStatus("online");
+      setStatus("registered");
     });
     sipClient.on(SipConstants.UA_UNREGISTERED, (args) => {
-      setStatus("offline");
-      if (isRestartRef.current) {
-        createSipClient();
-        isRestartRef.current = false;
-      } else {
-        clientGoOffline();
+      setStatus("unregistered");
+      if (sipUA.current) {
+        sipUA.current.stop();
       }
-      toast({
-        title: `User is not registered${args.cause ? `, ${args.cause}` : ""}`,
-        status: "warning",
-        duration: DEFAULT_TOAST_DURATION,
-        isClosable: true,
-      });
+      unregisteredReasonRef.current = `User is not registered${
+        args.cause ? `, ${args.cause}` : ""
+      }`;
     });
 
     sipClient.on(SipConstants.UA_DISCONNECTED, (args) => {
+      if (unregisteredReasonRef.current) {
+        toast({
+          title: unregisteredReasonRef.current,
+          status: "warning",
+          duration: DEFAULT_TOAST_DURATION,
+          isClosable: true,
+        });
+        unregisteredReasonRef.current = "";
+      }
       setStatus("disconnected");
+      if (isRestartRef.current) {
+        createSipClient();
+        isRestartRef.current = false;
+      }
+
       if (args.error) {
         toast({
           title: `Cannot connect to ${sipServerAddress}, ${args.reason}`,
@@ -392,15 +417,15 @@ export const Phone = ({
     if (s === status) {
       return;
     }
-    if (s === "offline") {
-      clientGoOffline();
+    if (s === "unregistered") {
+      if (sipUA.current) {
+        sipUA.current.stop();
+      }
     } else {
-      createSipClient();
+      if (sipUA.current) {
+        sipUA.current.start();
+      }
     }
-  };
-
-  const isOnline = () => {
-    return status === "online";
   };
 
   const handleHangup = () => {
@@ -441,18 +466,28 @@ export const Phone = ({
     }
   };
 
+  const isStatusRegistered = () => {
+    return status === "registered";
+  };
+
   return (
     <Center flexDirection="column">
       {isConfigured ? (
         <>
           <HStack spacing={2} boxShadow="md" w="full" borderRadius={5} p={2}>
-            <Image src={isOnline() ? GreenAvatar : Avatar} boxSize="35px" />
+            <Image
+              src={isStatusRegistered() ? GreenAvatar : Avatar}
+              boxSize="35px"
+            />
             <VStack alignItems="start" w="full" spacing={0}>
               <HStack spacing={2} w="full">
                 <Text fontWeight="bold" fontSize="13px">
                   {sipDisplayName || sipUsername}
                 </Text>
-                <Circle size="8px" bg={isOnline() ? "green.500" : "gray.500"} />
+                <Circle
+                  size="8px"
+                  bg={isStatusRegistered() ? "green.500" : "gray.500"}
+                />
               </HStack>
               <Text fontWeight="bold" w="full">
                 {`${sipUsername}@${sipDomain}`}
@@ -462,13 +497,13 @@ export const Phone = ({
             <Spacer />
             <VStack h="full" align="center">
               <JambonzSwitch
-                isDisabled={isForceChangeUaStatus}
+                isDisabled={isSwitchingUserStatus}
                 onlabel="Online"
                 offLabel="Offline"
-                initialCheck={isOnline() || isForceChangeUaStatus}
+                checked={[isOnline, setIsOnline]}
                 onChange={(v) => {
-                  setIsForceChangeUaStatus(true);
-                  handleGoOffline(v ? "online" : "offline");
+                  setIsSwitchingUserStatus(true);
+                  handleGoOffline(v ? "registered" : "unregistered");
                 }}
               />
             </VStack>
@@ -498,7 +533,7 @@ export const Phone = ({
           spacing={2}
           w="full"
           mt={5}
-          className={isOnline() ? "" : "blurred"}
+          className={isStatusRegistered() ? "" : "blurred"}
         >
           {isAdvanceMode && isSipClientIdle(callStatus) && (
             <HStack spacing={2} align="start" w="full">
@@ -627,7 +662,7 @@ export const Phone = ({
             <Button
               w="full"
               onClick={handleCallButtion}
-              isDisabled={status === "offline"}
+              isDisabled={!isStatusRegistered()}
               colorScheme="jambonz"
               alignContent="center"
               isLoading={isCallButtonLoading}

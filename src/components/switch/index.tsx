@@ -1,32 +1,25 @@
 import { Box, Text } from "@chakra-ui/react";
-import { useEffect, useState } from "react";
 
 type JambonzSwitchProbs = {
   onlabel: string;
   offLabel: string;
-  initialCheck: boolean;
+  checked: [boolean, React.Dispatch<React.SetStateAction<boolean>>];
   isDisabled?: boolean;
   onChange: (value: boolean) => void;
 };
 function JambonzSwitch({
   onlabel,
   offLabel,
-  initialCheck,
+  checked: [isToggled, setToggled],
   isDisabled = false,
   onChange,
 }: JambonzSwitchProbs) {
-  const [isToggled, setToggled] = useState(initialCheck);
-
-  useEffect(() => {
-    setToggled(initialCheck);
-  }, [initialCheck]);
-
   return (
     <Box
       position="relative"
       w="90px"
       h="30px"
-      bg={isToggled && !isDisabled ? "green.500" : "grey.500"}
+      bg={isToggled ? "green.500" : "grey.500"}
       borderRadius="full"
       onClick={() => {
         if (!isDisabled) {
