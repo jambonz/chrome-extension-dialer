@@ -211,4 +211,8 @@ export default class SipUA extends events.EventEmitter {
     const session: SipSession = this.#sessionManager.getSession(id);
     session.setActive(true);
   }
+
+  isConnected() {
+    return this.#ua.isConnected();
+  }
 }
