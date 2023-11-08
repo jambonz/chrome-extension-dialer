@@ -31,7 +31,7 @@ import {
   SipClientStatus,
 } from "src/common/types";
 import { SipConstants, SipUA } from "src/lib";
-import IncommingCall from "./incomming-call";
+import IncommingCall from "./incoming-call";
 import DialPad from "./dial-pad";
 import {
   isSipClientAnswered,
@@ -551,8 +551,9 @@ export const Phone = ({
                       (resolve, reject) => {
                         getRegisteredUser()
                           .then(({ json }) => {
+                            const sortedUsers = json.sort((a, b) => a.localeCompare(b));
                             resolve(
-                              json
+                              sortedUsers
                                 .filter((u) => !u.includes(sipUsername))
                                 .map((u) => {
                                   const uName = u.match(/(^.*)@.*/);
@@ -586,8 +587,9 @@ export const Phone = ({
                       (resolve, reject) => {
                         getQueues()
                           .then(({ json }) => {
+                            const sortedQueues = json.sort((a, b) => a.name.localeCompare(b.name));
                             resolve(
-                              json.map((q) => ({
+                              sortedQueues.map((q) => ({
                                 name: `${q.name} (${q.length})`,
                                 value: q.name,
                               }))
@@ -616,8 +618,9 @@ export const Phone = ({
                       (resolve, reject) => {
                         getApplications()
                           .then(({ json }) => {
+                            const sortedApps = json.sort((a, b) => a.name.localeCompare(b.name));
                             resolve(
-                              json.map((a) => ({
+                              sortedApps.map((a) => ({
                                 name: a.name,
                                 value: a.application_sid,
                               }))
