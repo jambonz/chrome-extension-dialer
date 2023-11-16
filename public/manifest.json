@@ -1,19 +1,15 @@
 {
-  "version": "1.0.2",
+  "version": "1.0.3",
   "manifest_version": 3,
-  "name": "Jambonz Webrtc Client",
-  "description": "Jambonz Webrtc Client",
+  "name": "jambonz webrtc phone",
+  "description": "jambonz webrtc phone",
   "action": {
-    "default_title": "Jambonz Webrtc Client"
+    "default_title": "jambonz webrtc phone"
   },
   "background": {
     "service_worker": "background/index.js"
   },
-  "permissions": [
-    "activeTab",
-    "storage",
-    "https://*/*"
-  ],
+  "permissions": ["activeTab", "storage", "https://*/*"],
   "icons": {
     "16": "icons/icon.png",
     "48": "icons/icon.png",
