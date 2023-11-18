@@ -1,5 +1,5 @@
 {
-  "version": "1.0.3",
+  "version": "1.0.4",
   "manifest_version": 3,
   "name": "jambonz webrtc phone",
   "description": "jambonz webrtc phone",
@@ -9,7 +9,7 @@
   "background": {
     "service_worker": "background/index.js"
   },
-  "permissions": ["activeTab", "storage", "https://*/*"],
+  "permissions": ["storage", "https://*/*"],
   "icons": {
     "16": "icons/icon.png",
     "48": "icons/icon.png",

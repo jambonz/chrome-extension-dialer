@@ -1,6 +1,6 @@
 {
   "name": "webrtc-chrome-ext",
-  "version": "1.0.2",
+  "version": "1.0.4",
   "private": true,
   "dependencies": {
     "@chakra-ui/react": "^2.8.0",
