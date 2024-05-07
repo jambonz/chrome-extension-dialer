@@ -59,9 +59,10 @@ import {
   faPhoneSlash,
   faPlay,
   faUserGroup,
-  faUsers,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import NewConference from "./new-conference";
+import JoinConference from "./join-conference";
 
 type PhoneProbs = {
   sipDomain: string;
@@ -73,6 +74,14 @@ type PhoneProbs = {
   calledName: [string, React.Dispatch<React.SetStateAction<string>>];
   advancedSettings: AdvancedAppSettings;
 };
+
+enum PAGE_VIEW {
+  DIAL_PAD,
+  INCOMING_CALL,
+  OUTGOING_CALL,
+  START_NEW_CONFERENCE,
+  JOIN_CONFERENCE,
+}
 
 export const Phone = ({
   sipDomain,
@@ -109,6 +118,7 @@ export const Phone = ({
   const [isOnline, setIsOnline] = useState(false);
   const unregisteredReasonRef = useRef("");
   const isInputNumberFocusRef = useRef(false);
+  const [pageView, setPageView] = useState<PAGE_VIEW>(PAGE_VIEW.DIAL_PAD);
   const [registeredUser, setRegisteredUser] = useState<Partial<RegisteredUser>>(
     {
       allow_direct_app_calling: false,
@@ -158,6 +168,15 @@ export const Phone = ({
     if (isSipClientIdle(callStatus) && isCallButtonLoading) {
       setIsCallButtonLoading(false);
     }
+    if (isSipClientRinging(callStatus)) {
+      if (sessionDirection === "incoming") {
+        setPageView(PAGE_VIEW.INCOMING_CALL);
+      } else {
+        setPageView(PAGE_VIEW.OUTGOING_CALL);
+      }
+    } else {
+      setPageView(PAGE_VIEW.DIAL_PAD);
+    }
   }, [callStatus]);
 
   useEffect(() => {
@@ -189,29 +208,6 @@ export const Phone = ({
       fetchRegisterUser();
     }, 10_000);
   }, []);
-
-  // useEffect(() => {
-  //   chrome.runtime.onMessage.addListener(function (request) {
-  //     const msg = request as Message<any>;
-  //     switch (msg.event) {
-  //       case MessageEvent.Call:
-  //         handleCallEvent(msg.data as Call);
-  //         break;
-  //       default:
-  //         break;
-  //     }
-  //   });
-  // }, []);
-
-  // const handleCallEvent = (call: Call) => {
-  //   if (!call.number) return;
-
-  //   if (isSipClientIdle(callStatus)) {
-  //     setIsCallButtonLoading(true);
-  //     setInputNumber(call.number);
-  //     sipUA.current?.call(call.number);
-  //   }
-  // };
 
   const fetchRegisterUser = () => {
     getSelfRegisteredUser(sipUsernameRef.current)
@@ -516,21 +512,7 @@ export const Phone = ({
           Go to Settings to configure your account
         </Heading>
       )}
-
-      {isSipClientRinging(callStatus) ? (
-        sessionDirection === "incoming" ? (
-          <IncommingCall
-            number={inputNumber}
-            answer={handleAnswer}
-            decline={handleDecline}
-          />
-        ) : (
-          <OutGoingCall
-            number={inputNumber || appName}
-            cancelCall={handleDecline}
-          />
-        )
-      ) : (
+      {pageView === PAGE_VIEW.DIAL_PAD && (
         <VStack
           spacing={2}
           w="full"
@@ -643,32 +625,20 @@ export const Phone = ({
 
               <IconButtonMenu
                 icon={<FontAwesomeIcon icon={faPeopleGroup} />}
-                tooltip="Call an application"
-                noResultLabel="No applications"
+                tooltip="Join a conference"
+                noResultLabel="No conference"
                 onClick={(name, value) => {
-                  setAppName(`App ${name}`);
-                  const calledAppId = `app-${value}`;
-                  setInputNumber("");
-                  makeOutboundCall(calledAppId, `App ${name}`);
+                  setPageView(PAGE_VIEW.START_NEW_CONFERENCE);
                 }}
                 onOpen={() => {
-                  return new Promise<IconButtonMenuItems[]>(
-                    (resolve, reject) => {
-                      getApplications()
-                        .then(({ json }) => {
-                          const sortedApps = json.sort((a, b) =>
-                            a.name.localeCompare(b.name)
-                          );
-                          resolve(
-                            sortedApps.map((a) => ({
-                              name: a.name,
-                              value: a.application_sid,
-                            }))
-                          );
-                        })
-                        .catch((err) => reject(err));
-                    }
-                  );
+                  return new Promise<IconButtonMenuItems[]>((resolve) => {
+                    resolve([
+                      {
+                        name: "Start New Conference",
+                        value: "start_new_conference",
+                      },
+                    ]);
+                  });
                 }}
               />
             </HStack>
@@ -770,6 +740,33 @@ export const Phone = ({
             </HStack>
           )}
         </VStack>
+      )}
+      {pageView === PAGE_VIEW.INCOMING_CALL && (
+        <IncommingCall
+          number={inputNumber}
+          answer={handleAnswer}
+          decline={handleDecline}
+        />
+      )}
+      {pageView === PAGE_VIEW.OUTGOING_CALL && (
+        <OutGoingCall
+          number={inputNumber || appName}
+          cancelCall={handleDecline}
+        />
+      )}
+      {pageView === PAGE_VIEW.JOIN_CONFERENCE && (
+        <JoinConference
+          handleCancel={() => {
+            setPageView(PAGE_VIEW.DIAL_PAD);
+          }}
+        />
+      )}
+      {pageView === PAGE_VIEW.START_NEW_CONFERENCE && (
+        <NewConference
+          handleCancel={() => {
+            setPageView(PAGE_VIEW.DIAL_PAD);
+          }}
+        />
       )}
     </Center>
   );
