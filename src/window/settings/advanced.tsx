@@ -1,4 +1,5 @@
 import {
+  Box,
   Button,
   FormControl,
   FormLabel,
@@ -21,6 +22,7 @@ import PasswordInput from "src/components/password-input";
 import ResetIcon from "src/imgs/icons/Reset.svg";
 import { getAdvancedSettings, saveAddvancedSettings } from "src/storage";
 import { normalizeUrl } from "src/utils";
+import { useToken } from "@chakra-ui/react";
 
 export const AdvancedSettings = () => {
   const [apiKey, setApiKey] = useState("");
@@ -111,7 +113,8 @@ export const AdvancedSettings = () => {
         </VStack>
         {isAdvancedMode && (
           <HStack w="full" mt={2} mb={2}>
-            <FontAwesomeIcon
+            <Box
+              as={FontAwesomeIcon}
               icon={isCredentialOk ? faCheckCircle : faCircleXmark}
               color={isCredentialOk ? "green.500" : "red.500"}
             />

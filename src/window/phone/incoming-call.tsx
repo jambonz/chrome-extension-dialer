@@ -1,4 +1,12 @@
-import { Button, VStack, Text, Icon, HStack, Spacer } from "@chakra-ui/react";
+import {
+  Button,
+  VStack,
+  Text,
+  Icon,
+  HStack,
+  Spacer,
+  Box,
+} from "@chakra-ui/react";
 import { faPhone } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { formatPhoneNumber } from "src/utils";
@@ -16,7 +24,8 @@ export const IncommingCall = ({
 }: IncommingCallProbs) => {
   return (
     <VStack alignItems="center" spacing={4} mt="130px" w="full">
-      <FontAwesomeIcon
+      <Box
+        as={FontAwesomeIcon}
         icon={faPhone}
         color="jambonz.500"
         width="60px"
