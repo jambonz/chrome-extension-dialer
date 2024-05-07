@@ -34,6 +34,7 @@ export default class SipUA extends events.EventEmitter {
       display_name: client.name,
       sockets: [new WebSocketInterface(settings.wsUri)],
       register: settings.register,
+      register_expires: 600,
     });
     this.#ua.on("connecting", (data: UAConnectingEvent) =>
       this.emit(SipConstants.UA_CONNECTING, { ...data, client })

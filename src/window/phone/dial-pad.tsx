@@ -53,10 +53,16 @@ export const DialPad = ({ handleDigitPress }: DialPadProbs) => {
   }, []);
 
   return (
-    <Box p={2} w="full" ref={selfRef}>
-      <VStack w="full" bg="grey.500" spacing={0.5}>
+    <Box p={2} w="full" h="280px" ref={selfRef}>
+      <VStack w="full" h="full" bg="grey.500" spacing={0.5}>
         {buttons.map((row, rowIndex) => (
-          <HStack key={rowIndex} justifyContent="space-between" spacing={0.5}>
+          <HStack
+            key={rowIndex}
+            justifyContent="space-between"
+            spacing={0.5}
+            w="full"
+            h="full"
+          >
             {row.map((num) => (
               <Button
                 key={num}
@@ -66,8 +72,8 @@ export const DialPad = ({ handleDigitPress }: DialPadProbs) => {
                 }}
                 size="lg"
                 p={0}
-                width="124px"
-                height="70px"
+                width="calc(100% / 3)"
+                height="100%"
                 variant="unstyled"
                 bg="white"
                 _hover={{

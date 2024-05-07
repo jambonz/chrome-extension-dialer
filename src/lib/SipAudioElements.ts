@@ -8,25 +8,39 @@ export default class SipAudioElements {
   #localHungup: HTMLAudioElement;
 
   constructor() {
-    this.#ringing = new Audio(chrome.runtime.getURL("audios/ringing.mp3"));
+    this.#ringing = this.getAudio("audios/ringing.mp3");
     this.#ringing.loop = true;
     this.#ringing.volume = 0.8;
-    this.#ringBack = new Audio(chrome.runtime.getURL("audios/us-ringback.mp3"));
+    this.#ringBack = this.getAudio("audios/us-ringback.mp3");
     this.#ringBack.loop = true;
     this.#ringBack.volume = 0.8;
-    this.#failed = new Audio(chrome.runtime.getURL("audios/call-failed.mp3"));
+    this.#failed = this.getAudio("audios/call-failed.mp3");
     this.#failed.volume = 0.3;
-    this.#busy = new Audio(chrome.runtime.getURL("audios/us-busy-signal.mp3"));
+    this.#busy = this.getAudio("audios/us-busy-signal.mp3");
     this.#busy.volume = 0.3;
-    this.#hungup = new Audio(
-      chrome.runtime.getURL("audios/remote-party-hungup-tone.mp3")
-    );
+    this.#hungup = this.getAudio("audios/remote-party-hungup-tone.mp3");
     this.#hungup.volume = 0.3;
-    this.#localHungup = new Audio(
-      chrome.runtime.getURL("audios/local-party-hungup-tone.mp3")
-    );
+    this.#localHungup = this.getAudio("audios/local-party-hungup-tone.mp3");
     this.#localHungup.volume = 0.3;
     this.#remote = new Audio();
+  }
+
+  private getAudio(path: string) {
+    let audioURL;
+
+    // Check if we're in a Chrome extension
+    if (
+      typeof chrome !== "undefined" &&
+      chrome.runtime &&
+      chrome.runtime.getURL
+    ) {
+      audioURL = chrome.runtime.getURL(path);
+    } else {
+      // We're in a web context, adjust this path as necessary
+      audioURL = `/${path}`;
+    }
+
+    return new Audio(audioURL);
   }
 
   playLocalHungup(volume: number | undefined) {
