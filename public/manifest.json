@@ -1,8 +1,23 @@
 {
-  "short_name": "Jambonz WebPhone",
-  "name": "Jambonz WebPhone",
-  "start_url": ".",
-  "display": "standalone",
-  "theme_color": "#000000",
-  "background_color": "#ffffff"
+  "version": "1.0.6",
+  "manifest_version": 3,
+  "name": "jambonz webrtc phone",
+  "description": "jambonz webrtc phone",
+  "action": {
+    "default_title": "jambonz webrtc phone"
+  },
+  "background": {
+    "service_worker": "background/index.js"
+  },
+  "permissions": ["storage"],
+  "host_permissions": ["https://*/*"],
+  "icons": {
+    "16": "icons/icon.png",
+    "48": "icons/icon.png",
+    "128": "icons/icon.png",
+    "192": "icons/icon192.png",
+    "384": "icons/icon384.png",
+    "512": "icons/icon512.png",
+    "1024": "icons/icon1024.png"
+  }
 }
