@@ -20,7 +20,7 @@ const initiateNewPhonePopup = () => {
     {
       url: chrome.runtime.getURL("window/index.html"),
       width: 440,
-      height: 720,
+      height: 750,
       focused: true,
       type: "panel",
       state: "normal",

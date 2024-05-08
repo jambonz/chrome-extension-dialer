@@ -45,6 +45,7 @@ export const JoinConference = ({
   const [speakOnlyTo, setSpeakOnlyTo] = useState("");
   const [tags, setTags] = useState("");
   const [mode, setMode] = useState<ConferenceModes>("full_participant");
+  const [participantState, setParticipantState] = useState("Join as");
 
   useEffect(() => {
     switch (callStatus) {
@@ -52,6 +53,7 @@ export const JoinConference = ({
         setAppTitle("Conference");
         setSubmitTitle("Update");
         setCancelTitle("Hangup");
+        setParticipantState("Participant state");
         setIsLoading(false);
         configureConferenceSession();
         break;
@@ -107,7 +109,9 @@ export const JoinConference = ({
   return (
     <Box as="form" onSubmit={handleSubmit} w="full">
       <VStack spacing={4} mt="20px" w="full">
-        <Text fontWeight="bold">{appTitle}</Text>
+        <Text fontWeight="bold" fontSize="lg">
+          {appTitle}
+        </Text>
         {callDuration > 0 && (
           <Text fontSize="15px">
             {new Date(callDuration * 1000).toISOString().substr(11, 8)}
@@ -125,7 +129,7 @@ export const JoinConference = ({
           />
         </FormControl>
 
-        <OutlineBox title="Join as">
+        <OutlineBox title={participantState}>
           <RadioGroup
             onChange={(e) => setMode(e as ConferenceModes)}
             value={mode}

@@ -807,8 +807,10 @@ export const Phone = ({
             setPageView(PAGE_VIEW.DIAL_PAD);
           }}
           call={(name) => {
+            const conference = `conference-${name}`;
             setSelectedConference(name);
-            sipUA.current?.call(`conference-${name}`);
+            setInputNumber(conference);
+            makeOutboundCall(conference, `Conference ${name}`);
           }}
         />
       )}
