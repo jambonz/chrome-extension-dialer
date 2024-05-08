@@ -7,6 +7,7 @@ import {
   Queue,
   RegisteredUser,
   StatusCodes,
+  UpdateCall,
 } from "./types";
 import { MSG_SOMETHING_WRONG } from "./constants";
 import { getAdvancedSettings } from "src/storage";
@@ -168,8 +169,10 @@ export const updateConferenceParticipantAction = (
   payload: ConferenceParticipantAction
 ) => {
   const advancedSettings = getAdvancedSettings();
-  return putFetch<EmptyData, ConferenceParticipantAction>(
+  return putFetch<EmptyData, UpdateCall>(
     `${advancedSettings.apiServer}/Accounts/${advancedSettings.accountSid}/Calls/${callSid}`,
-    payload
+    {
+      conferenceParticipantAction: payload,
+    }
   );
 };

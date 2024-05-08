@@ -62,7 +62,7 @@ import {
   faUserGroup,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import JoinConference from "./join-conference";
+import JoinConference from "./conference";
 
 type PhoneProbs = {
   sipDomain: string;
@@ -198,7 +198,9 @@ export const Phone = ({
     if (calledANumber) {
       if (
         !(
-          calledANumber.startsWith("app-") || calledANumber.startsWith("queue-")
+          calledANumber.startsWith("app-") ||
+          calledANumber.startsWith("queue-") ||
+          calledANumber.startsWith("conference-")
         )
       ) {
         setInputNumber(calledANumber);
@@ -641,41 +643,44 @@ export const Phone = ({
                   }}
                 />
               )}
-
-              <IconButtonMenu
-                icon={<FontAwesomeIcon icon={faPeopleGroup} />}
-                tooltip="Join a conference"
-                noResultLabel="No conference"
-                onClick={(name, value) => {
-                  setPageView(PAGE_VIEW.JOIN_CONFERENCE);
-                  setSelectedConference(
-                    value === PAGE_VIEW.JOIN_CONFERENCE.toString() ? "" : value
-                  );
-                }}
-                onOpen={() => {
-                  return new Promise<IconButtonMenuItems[]>(
-                    (resolve, reject) => {
-                      getConferences()
-                        .then(({ json }) => {
-                          const sortedApps = json.sort((a, b) =>
-                            a.localeCompare(b)
-                          );
-                          resolve([
-                            {
-                              name: "Start new conference",
-                              value: PAGE_VIEW.JOIN_CONFERENCE.toString(),
-                            },
-                            ...sortedApps.map((a) => ({
-                              name: a,
-                              value: a,
-                            })),
-                          ]);
-                        })
-                        .catch((err) => reject(err));
-                    }
-                  );
-                }}
-              />
+              {registeredUser.allow_direct_app_calling && (
+                <IconButtonMenu
+                  icon={<FontAwesomeIcon icon={faPeopleGroup} />}
+                  tooltip="Join a conference"
+                  noResultLabel="No conference"
+                  onClick={(name, value) => {
+                    setPageView(PAGE_VIEW.JOIN_CONFERENCE);
+                    setSelectedConference(
+                      value === PAGE_VIEW.JOIN_CONFERENCE.toString()
+                        ? ""
+                        : value
+                    );
+                  }}
+                  onOpen={() => {
+                    return new Promise<IconButtonMenuItems[]>(
+                      (resolve, reject) => {
+                        getConferences()
+                          .then(({ json }) => {
+                            const sortedApps = json.sort((a, b) =>
+                              a.localeCompare(b)
+                            );
+                            resolve([
+                              {
+                                name: "Start new conference",
+                                value: PAGE_VIEW.JOIN_CONFERENCE.toString(),
+                              },
+                              ...sortedApps.map((a) => ({
+                                name: a,
+                                value: a,
+                              })),
+                            ]);
+                          })
+                          .catch((err) => reject(err));
+                      }
+                    );
+                  }}
+                />
+              )}
             </HStack>
           )}
 
@@ -793,12 +798,17 @@ export const Phone = ({
         <JoinConference
           conferenceId={selectedConference}
           callSid={callSid}
+          callDuration={seconds}
+          callStatus={callStatus}
           handleCancel={() => {
+            if (isSipClientAnswered(callStatus)) {
+              sipUA.current?.terminate(480, "Call Finished", undefined);
+            }
             setPageView(PAGE_VIEW.DIAL_PAD);
           }}
           call={(name) => {
             setSelectedConference(name);
-            sipUA.current?.call(`conf:${name}`);
+            sipUA.current?.call(`conference-${name}`);
           }}
         />
       )}

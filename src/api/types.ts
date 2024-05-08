@@ -50,10 +50,13 @@ export type ConferenceParticipantActions =
   | "tag"
   | "untag"
   | "coach"
+  | "uncoach"
   | "mute"
   | "unmute"
   | "hold"
   | "unhold";
+
+export type ConferenceModes = "full_participant" | "muted" | "coach";
 
 export interface ConferenceParticipantAction {
   action: ConferenceParticipantActions;
