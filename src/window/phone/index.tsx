@@ -42,6 +42,7 @@ import { v4 as uuidv4 } from "uuid";
 import IconButtonMenu, { IconButtonMenuItems } from "src/components/menu";
 import {
   getApplications,
+  getConferences,
   getQueues,
   getRegisteredUser,
   getSelfRegisteredUser,
@@ -126,6 +127,7 @@ export const Phone = ({
       allow_direct_user_calling: false,
     }
   );
+  const callSidRef = useRef("");
   const toast = useToast();
 
   useEffect(() => {
@@ -204,9 +206,12 @@ export const Phone = ({
   }, [status]);
 
   useEffect(() => {
-    setInterval(() => {
+    const timer = setInterval(() => {
       fetchRegisterUser();
-    }, 10_000);
+    }, 10000);
+    return () => {
+      clearInterval(timer);
+    };
   }, []);
 
   const fetchRegisterUser = () => {
@@ -311,6 +316,7 @@ export const Phone = ({
       setInputNumber(args.session.user);
     });
     sipClient.on(SipConstants.SESSION_ANSWERED, (args) => {
+      callSidRef.current = args.callSid;
       const currentCall = getCurrentCall();
       if (currentCall) {
         currentCall.timeStamp = Date.now();
@@ -628,17 +634,34 @@ export const Phone = ({
                 tooltip="Join a conference"
                 noResultLabel="No conference"
                 onClick={(name, value) => {
-                  setPageView(PAGE_VIEW.START_NEW_CONFERENCE);
+                  if (value === PAGE_VIEW.START_NEW_CONFERENCE.toString()) {
+                    setPageView(PAGE_VIEW.START_NEW_CONFERENCE);
+                  } else {
+                    setPageView(PAGE_VIEW.JOIN_CONFERENCE);
+                  }
                 }}
                 onOpen={() => {
-                  return new Promise<IconButtonMenuItems[]>((resolve) => {
-                    resolve([
-                      {
-                        name: "Start New Conference",
-                        value: "start_new_conference",
-                      },
-                    ]);
-                  });
+                  return new Promise<IconButtonMenuItems[]>(
+                    (resolve, reject) => {
+                      getConferences()
+                        .then(({ json }) => {
+                          const sortedApps = json.sort((a, b) =>
+                            a.localeCompare(b)
+                          );
+                          resolve([
+                            {
+                              name: "Start new conference",
+                              value: PAGE_VIEW.START_NEW_CONFERENCE.toString(),
+                            },
+                            ...sortedApps.map((a) => ({
+                              name: a,
+                              value: a,
+                            })),
+                          ]);
+                        })
+                        .catch((err) => reject(err));
+                    }
+                  );
                 }}
               />
             </HStack>

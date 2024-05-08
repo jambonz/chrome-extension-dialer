@@ -45,3 +45,20 @@ export interface RegisteredUser {
   allow_direct_user_calling: boolean;
   registered_status: string;
 }
+
+export type ConferenceParticipantActions =
+  | "tag"
+  | "untag"
+  | "coach"
+  | "mute"
+  | "unmute"
+  | "hold"
+  | "unhold";
+
+export interface ConferenceParticipantAction {
+  action: ConferenceParticipantActions;
+  tag: string;
+}
+export interface UpdateCall {
+  conferenceParticipantAction: ConferenceParticipantAction;
+}

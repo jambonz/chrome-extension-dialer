@@ -1,5 +1,7 @@
 import {
   Application,
+  ConferenceParticipantAction,
+  ConferenceParticipantActions,
   FetchError,
   FetchTransport,
   Queue,
@@ -8,6 +10,7 @@ import {
 } from "./types";
 import { MSG_SOMETHING_WRONG } from "./constants";
 import { getAdvancedSettings } from "src/storage";
+import { EmptyData } from "src/common/types";
 
 const fetchTransport = <Type>(
   url: string,
@@ -150,5 +153,23 @@ export const getSelfRegisteredUser = (username: string) => {
   const advancedSettings = getAdvancedSettings();
   return getFetch<RegisteredUser>(
     `${advancedSettings.apiServer}/Accounts/${advancedSettings.accountSid}/RegisteredSipUsers/${username}`
+  );
+};
+
+export const getConferences = () => {
+  const advancedSettings = getAdvancedSettings();
+  return getFetch<string[]>(
+    `${advancedSettings.apiServer}/Accounts/${advancedSettings.accountSid}/Conferences`
+  );
+};
+
+export const updateConferenceParticipantAction = (
+  callSid: string,
+  payload: ConferenceParticipantAction
+) => {
+  const advancedSettings = getAdvancedSettings();
+  return putFetch<EmptyData, ConferenceParticipantAction>(
+    `${advancedSettings.apiServer}/Accounts/${advancedSettings.accountSid}/Calls/${callSid}`,
+    payload
   );
 };

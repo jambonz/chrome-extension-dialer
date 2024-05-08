@@ -28,8 +28,8 @@ export const IncommingCall = ({
         as={FontAwesomeIcon}
         icon={faPhone}
         color="jambonz.500"
-        width="60px"
-        height="60px"
+        width="30px"
+        height="30px"
       />
       <Text fontSize="15px">Incoming call from</Text>
       <Text fontSize="24px" fontWeight="bold">
