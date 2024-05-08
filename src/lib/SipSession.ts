@@ -201,19 +201,19 @@ export default class SipSession extends events.EventEmitter {
         direction: this.#rtcSession.direction,
       });
     });
-    pc.addEventListener(
-      "track",
-      (event: RTCPeerConnectionEventMap["track"]): void => {
-        const stream: MediaStream = new MediaStream([event.track]);
-        if (this.#rtcSession.direction === "outgoing") {
-          this.#audio.pauseRinging();
-        }
-        this.#audio.playRemote(stream);
-        this.emit(SipConstants.SESSION_TRACK, {
-          direction: this.#rtcSession.direction,
-        });
-      }
-    );
+    // pc.addEventListener(
+    //   "track",
+    //   (event: RTCPeerConnectionEventMap["track"]): void => {
+    //     const stream: MediaStream = new MediaStream([event.track]);
+    //     if (this.#rtcSession.direction === "outgoing") {
+    //       this.#audio.pauseRinging();
+    //     }
+    //     this.#audio.playRemote(stream);
+    //     this.emit(SipConstants.SESSION_TRACK, {
+    //       direction: this.#rtcSession.direction,
+    //     });
+    //   }
+    // );
   }
 
   get rtcSession() {

@@ -9,23 +9,41 @@ import {
   Text,
   VStack,
 } from "@chakra-ui/react";
-import { FormEvent } from "react";
+import { FormEvent, useState } from "react";
 import OutlineBox from "src/components/outline-box";
 
 type JoinConferenceProbs = {
+  conferenceId?: string;
+  callSid: string;
   handleCancel: () => void;
+  call: (conference: string) => void;
 };
-export const JoinConference = ({ handleCancel }: JoinConferenceProbs) => {
+export const JoinConference = ({
+  conferenceId,
+  handleCancel,
+  call,
+}: JoinConferenceProbs) => {
+  const [conferenceName, setConferenceName] = useState(conferenceId || "");
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
+    call(conferenceName);
   };
   return (
     <Box as="form" onSubmit={handleSubmit} w="full">
       <VStack spacing={4} mt="20px" w="full">
-        <Text fontWeight="bold">Joining conference</Text>
+        <Text fontWeight="bold">
+          {!!conferenceId ? "Joining" : "Start"} conference
+        </Text>
         <FormControl id="conference_name">
           <FormLabel>Conference name</FormLabel>
-          <Input type="text" placeholder="Name" isRequired />
+          <Input
+            type="text"
+            placeholder="Name"
+            isRequired
+            value={conferenceName}
+            onChange={(e) => setConferenceName(e.target.value)}
+            disabled={!!conferenceId}
+          />
         </FormControl>
 
         <OutlineBox title="Join as">
@@ -35,17 +53,17 @@ export const JoinConference = ({ handleCancel }: JoinConferenceProbs) => {
 
           <FormControl id="speak_only_to">
             <FormLabel>Speak only to</FormLabel>
-            <Input type="text" placeholder="agent" isRequired />
+            <Input type="text" placeholder="agent" />
           </FormControl>
 
           <FormControl id="tag">
             <FormLabel>Tag</FormLabel>
-            <Input type="text" placeholder="tags" isRequired />
+            <Input type="text" placeholder="tags" />
           </FormControl>
         </OutlineBox>
         <HStack w="full">
           <Button colorScheme="jambonz" type="submit" w="full">
-            Start Conference
+            {!!conferenceId ? "Join conference" : "Start conference"}
           </Button>
 
           <Button
