@@ -51,8 +51,9 @@ export const Recents = ({
           spacing={2}
           mt={2}
         >
-          {callHistories.map((c) => (
+          {callHistories.map((c, i) => (
             <CallHistoryItem
+              key={i}
               isSaved={isSaved}
               call={c}
               onCallNumber={onCallNumber}

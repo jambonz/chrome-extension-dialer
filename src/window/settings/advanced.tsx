@@ -1,4 +1,5 @@
 import {
+  Box,
   Button,
   FormControl,
   FormLabel,
@@ -6,19 +7,22 @@ import {
   Icon,
   Image,
   Input,
-  Spacer,
   Text,
   VStack,
 } from "@chakra-ui/react";
+import {
+  faCheckCircle,
+  faCircleXmark,
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { useEffect, useState } from "react";
-import { CheckCircle, XCircle } from "react-feather";
 import { getApplications } from "src/api";
 import { AdvancedAppSettings } from "src/common/types";
 import PasswordInput from "src/components/password-input";
-import InfoIcon from "src/imgs/icons/Info.svg";
 import ResetIcon from "src/imgs/icons/Reset.svg";
 import { getAdvancedSettings, saveAddvancedSettings } from "src/storage";
 import { normalizeUrl } from "src/utils";
+import { useToken } from "@chakra-ui/react";
 
 export const AdvancedSettings = () => {
   const [apiKey, setApiKey] = useState("");
@@ -109,10 +113,10 @@ export const AdvancedSettings = () => {
         </VStack>
         {isAdvancedMode && (
           <HStack w="full" mt={2} mb={2}>
-            <Icon
-              as={isCredentialOk ? CheckCircle : XCircle}
+            <Box
+              as={FontAwesomeIcon}
+              icon={isCredentialOk ? faCheckCircle : faCircleXmark}
               color={isCredentialOk ? "green.500" : "red.500"}
-              boxSize={6}
             />
             <Text
               fontSize="14px"

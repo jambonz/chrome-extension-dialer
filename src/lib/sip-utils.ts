@@ -3,7 +3,11 @@ function normalizeNumber(number: string): string {
     return number;
   } else if (/@/i.test(number)) {
     return number;
-  } else if (number.startsWith("app-") || number.startsWith("queue-")) {
+  } else if (
+    number.startsWith("app-") ||
+    number.startsWith("queue-") ||
+    number.startsWith("conference-")
+  ) {
     return number;
   } else {
     return number.replace(/[()\-. ]*/g, "");

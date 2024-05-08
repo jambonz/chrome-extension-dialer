@@ -1,5 +1,6 @@
-import { Button, Icon, Text, VStack } from "@chakra-ui/react";
-import { PhoneCall } from "react-feather";
+import { Box, Button, Icon, Text, VStack } from "@chakra-ui/react";
+import { faPhone } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { formatPhoneNumber } from "src/utils";
 
 type OutGoingCallProbs = {
@@ -10,7 +11,13 @@ type OutGoingCallProbs = {
 export const OutGoingCall = ({ number, cancelCall }: OutGoingCallProbs) => {
   return (
     <VStack alignItems="center" spacing={4} mt="130px" w="full">
-      <Icon as={PhoneCall} color="jambonz.500" w="60px" h="60px" />
+      <Box
+        as={FontAwesomeIcon}
+        icon={faPhone}
+        color="jambonz.500"
+        width="60px"
+        height="60px"
+      />
       <Text fontSize="15px">Dialing</Text>
       <Text fontSize="24px" fontWeight="bold">
         {formatPhoneNumber(number)}

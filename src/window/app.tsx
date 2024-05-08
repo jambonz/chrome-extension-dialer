@@ -104,10 +104,11 @@ export const WindowApp = () => {
           index={tabIndex}
         >
           <TabList mb="1em" gap={1}>
-            {tabsSettings.map((s) => (
+            {tabsSettings.map((s, i) => (
               <Tab
                 _selected={{ color: "white", bg: "jambonz.500" }}
                 bg="grey.500"
+                key={i}
               >
                 {s.title}
               </Tab>
@@ -115,8 +116,8 @@ export const WindowApp = () => {
           </TabList>
 
           <TabPanels>
-            {tabsSettings.map((s) => (
-              <TabPanel>{s.content}</TabPanel>
+            {tabsSettings.map((s, i) => (
+              <TabPanel key={i}>{s.content}</TabPanel>
             ))}
           </TabPanels>
         </Tabs>

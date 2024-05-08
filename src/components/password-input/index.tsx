@@ -1,12 +1,7 @@
 import { useState } from "react";
-import {
-  Input,
-  InputGroup,
-  InputRightElement,
-  Button,
-  Box,
-} from "@chakra-ui/react";
-import { Eye, EyeOff } from "react-feather";
+import { Input, InputGroup, InputRightElement, Button } from "@chakra-ui/react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 
 type PasswordInputProbs = {
   password: [string, React.Dispatch<React.SetStateAction<string>>];
@@ -34,7 +29,7 @@ function PasswordInput({
       />
       <InputRightElement width="4.5rem">
         <Button h="1.75rem" size="sm" onClick={handleClick} variant="unstyled">
-          {showPassword ? <EyeOff /> : <Eye />}
+          <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
         </Button>
       </InputRightElement>
     </InputGroup>

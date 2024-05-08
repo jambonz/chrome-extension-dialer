@@ -62,12 +62,18 @@ export default class SipSession extends events.EventEmitter {
       }
     });
 
-    this.#rtcSession.on("accepted", () => {
-      this.emit(SipConstants.SESSION_ANSWERED, {
-        status: SipConstants.SESSION_ANSWERED,
-      });
-      this.#audio.playAnswer(undefined);
-    });
+    this.#rtcSession.on(
+      "accepted",
+      ({ response }: { response: IncomingResponse }) => {
+        this.emit(SipConstants.SESSION_ANSWERED, {
+          status: SipConstants.SESSION_ANSWERED,
+          callSid: response.hasHeader("X-Call-Sid")
+            ? response.getHeader("X-Call-Sid")
+            : null,
+        });
+        this.#audio.playAnswer(undefined);
+      }
+    );
 
     this.#rtcSession.on("failed", (data: EndEvent): void => {
       let { originator, cause, message } = data;
@@ -195,16 +201,19 @@ export default class SipSession extends events.EventEmitter {
         direction: this.#rtcSession.direction,
       });
     });
-    // pc.addEventListener('track', (event: RTCPeerConnectionEventMap["track"]): void => {
-    //     const stream: MediaStream = new MediaStream([event.track])
-    //     if (this.#rtcSession.direction === 'outgoing') {
-    //         this.#audio.pauseRinging();
+    // pc.addEventListener(
+    //   "track",
+    //   (event: RTCPeerConnectionEventMap["track"]): void => {
+    //     const stream: MediaStream = new MediaStream([event.track]);
+    //     if (this.#rtcSession.direction === "outgoing") {
+    //       this.#audio.pauseRinging();
     //     }
-    //     this.#audio.playRemote(stream, "track");
+    //     this.#audio.playRemote(stream);
     //     this.emit(SipConstants.SESSION_TRACK, {
-    //         direction: this.#rtcSession.direction
+    //       direction: this.#rtcSession.direction,
     //     });
-    // });
+    //   }
+    // );
   }
 
   get rtcSession() {

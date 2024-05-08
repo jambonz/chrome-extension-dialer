@@ -13,11 +13,12 @@ import {
   TabPanel,
 } from "@chakra-ui/react";
 import { useState } from "react";
-import { Search, Sliders } from "react-feather";
 import { CallHistory } from "src/common/types";
 
 import { DEFAULT_COLOR_SCHEME } from "src/common/constants";
 import Recents from "./recent";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faSearch, faSliders } from "@fortawesome/free-solid-svg-icons";
 
 type CallHistoriesProbs = {
   calls: CallHistory[];
@@ -51,11 +52,11 @@ export const CallHistories = ({
             fontWeight="normal"
           />
           <InputLeftElement mr={2}>
-            <Icon as={Search} w="20px" h="20px" />
+            <FontAwesomeIcon icon={faSearch} width="20px" height="20px" />
           </InputLeftElement>
         </InputGroup>
         <HStack spacing={2} bg="grey.100" p={2} borderRadius={7}>
-          <Icon as={Sliders} w="20px" h="20px" />
+          <FontAwesomeIcon icon={faSliders} width="20px" height="20px" />
           <Text fontSize="12px" fontWeight="500">
             Filter
           </Text>

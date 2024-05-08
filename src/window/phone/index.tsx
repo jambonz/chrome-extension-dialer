@@ -7,7 +7,6 @@ import {
   IconButton,
   Image,
   Input,
-  Select,
   Spacer,
   Text,
   Tooltip,
@@ -15,16 +14,6 @@ import {
   useToast,
 } from "@chakra-ui/react";
 import { useEffect, useRef, useState } from "react";
-import {
-  GitMerge,
-  List,
-  Mic,
-  MicOff,
-  Pause,
-  PhoneOff,
-  Play,
-  Users,
-} from "react-feather";
 import {
   AdvancedAppSettings,
   SipCallDirection,
@@ -53,6 +42,7 @@ import { v4 as uuidv4 } from "uuid";
 import IconButtonMenu, { IconButtonMenuItems } from "src/components/menu";
 import {
   getApplications,
+  getConferences,
   getQueues,
   getRegisteredUser,
   getSelfRegisteredUser,
@@ -60,6 +50,19 @@ import {
 import JambonzSwitch from "src/components/switch";
 import { DEFAULT_TOAST_DURATION } from "src/common/constants";
 import { RegisteredUser } from "src/api/types";
+import {
+  faCodeMerge,
+  faList,
+  faMicrophone,
+  faMicrophoneSlash,
+  faPause,
+  faPeopleGroup,
+  faPhoneSlash,
+  faPlay,
+  faUserGroup,
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import JoinConference from "./conference";
 
 type PhoneProbs = {
   sipDomain: string;
@@ -71,6 +74,13 @@ type PhoneProbs = {
   calledName: [string, React.Dispatch<React.SetStateAction<string>>];
   advancedSettings: AdvancedAppSettings;
 };
+
+enum PAGE_VIEW {
+  DIAL_PAD,
+  INCOMING_CALL,
+  OUTGOING_CALL,
+  JOIN_CONFERENCE,
+}
 
 export const Phone = ({
   sipDomain,
@@ -84,29 +94,17 @@ export const Phone = ({
 }: PhoneProbs) => {
   const [inputNumber, setInputNumber] = useState("");
   const [appName, setAppName] = useState("");
-  const inputNumberRef = useRef(inputNumber);
   const [status, setStatus] = useState<SipClientStatus>("stop");
   const [isConfigured, setIsConfigured] = useState(false);
   const [callStatus, setCallStatus] = useState(SipConstants.SESSION_ENDED);
   const [sessionDirection, setSessionDirection] =
     useState<SipCallDirection>("");
-  const sessionDirectionRef = useRef(sessionDirection);
-  const sipUA = useRef<SipUA | null>(null);
-  const timerRef = useRef<NodeJS.Timer | null>(null);
   const [seconds, setSeconds] = useState(0);
-  const secondsRef = useRef(seconds);
   const [isCallButtonLoading, setIsCallButtonLoading] = useState(false);
   const [isAdvanceMode, setIsAdvancedMode] = useState(false);
-  const isRestartRef = useRef(false);
-  const sipDomainRef = useRef("");
-  const sipUsernameRef = useRef("");
-  const sipPasswordRef = useRef("");
-  const sipServerAddressRef = useRef("");
-  const sipDisplayNameRef = useRef("");
   const [isSwitchingUserStatus, setIsSwitchingUserStatus] = useState(true);
   const [isOnline, setIsOnline] = useState(false);
-  const unregisteredReasonRef = useRef("");
-  const isInputNumberFocusRef = useRef(false);
+  const [pageView, setPageView] = useState<PAGE_VIEW>(PAGE_VIEW.DIAL_PAD);
   const [registeredUser, setRegisteredUser] = useState<Partial<RegisteredUser>>(
     {
       allow_direct_app_calling: false,
@@ -114,6 +112,23 @@ export const Phone = ({
       allow_direct_user_calling: false,
     }
   );
+  const [selectedConference, setSelectedConference] = useState("");
+  const [callSid, setCallSid] = useState("");
+
+  const inputNumberRef = useRef(inputNumber);
+  const sessionDirectionRef = useRef(sessionDirection);
+  const sipUA = useRef<SipUA | null>(null);
+  const timerRef = useRef<NodeJS.Timer | null>(null);
+  const isRestartRef = useRef(false);
+  const sipDomainRef = useRef("");
+  const sipUsernameRef = useRef("");
+  const sipPasswordRef = useRef("");
+  const sipServerAddressRef = useRef("");
+  const sipDisplayNameRef = useRef("");
+  const unregisteredReasonRef = useRef("");
+  const isInputNumberFocusRef = useRef(false);
+  const secondsRef = useRef(seconds);
+
   const toast = useToast();
 
   useEffect(() => {
@@ -156,13 +171,36 @@ export const Phone = ({
     if (isSipClientIdle(callStatus) && isCallButtonLoading) {
       setIsCallButtonLoading(false);
     }
+    switch (callStatus) {
+      case SipConstants.SESSION_RINGING:
+        if (sessionDirection === "incoming") {
+          setPageView(PAGE_VIEW.INCOMING_CALL);
+        } else {
+          setPageView(PAGE_VIEW.OUTGOING_CALL);
+        }
+        break;
+      case SipConstants.SESSION_ANSWERED:
+        if (!!selectedConference) {
+          setPageView(PAGE_VIEW.JOIN_CONFERENCE);
+        } else {
+          setPageView(PAGE_VIEW.DIAL_PAD);
+        }
+        break;
+      case SipConstants.SESSION_ENDED:
+      case SipConstants.SESSION_FAILED:
+        setSelectedConference("");
+        setPageView(PAGE_VIEW.DIAL_PAD);
+        break;
+    }
   }, [callStatus]);
 
   useEffect(() => {
     if (calledANumber) {
       if (
         !(
-          calledANumber.startsWith("app-") || calledANumber.startsWith("queue-")
+          calledANumber.startsWith("app-") ||
+          calledANumber.startsWith("queue-") ||
+          calledANumber.startsWith("conference-")
         )
       ) {
         setInputNumber(calledANumber);
@@ -183,33 +221,13 @@ export const Phone = ({
   }, [status]);
 
   useEffect(() => {
-    setInterval(() => {
+    const timer = setInterval(() => {
       fetchRegisterUser();
-    }, 10_000);
+    }, 10000);
+    return () => {
+      clearInterval(timer);
+    };
   }, []);
-
-  // useEffect(() => {
-  //   chrome.runtime.onMessage.addListener(function (request) {
-  //     const msg = request as Message<any>;
-  //     switch (msg.event) {
-  //       case MessageEvent.Call:
-  //         handleCallEvent(msg.data as Call);
-  //         break;
-  //       default:
-  //         break;
-  //     }
-  //   });
-  // }, []);
-
-  // const handleCallEvent = (call: Call) => {
-  //   if (!call.number) return;
-
-  //   if (isSipClientIdle(callStatus)) {
-  //     setIsCallButtonLoading(true);
-  //     setInputNumber(call.number);
-  //     sipUA.current?.call(call.number);
-  //   }
-  // };
 
   const fetchRegisterUser = () => {
     getSelfRegisteredUser(sipUsernameRef.current)
@@ -313,6 +331,7 @@ export const Phone = ({
       setInputNumber(args.session.user);
     });
     sipClient.on(SipConstants.SESSION_ANSWERED, (args) => {
+      setCallSid(args.callSid);
       const currentCall = getCurrentCall();
       if (currentCall) {
         currentCall.timeStamp = Date.now();
@@ -514,21 +533,7 @@ export const Phone = ({
           Go to Settings to configure your account
         </Heading>
       )}
-
-      {isSipClientRinging(callStatus) ? (
-        sessionDirection === "incoming" ? (
-          <IncommingCall
-            number={inputNumber}
-            answer={handleAnswer}
-            decline={handleDecline}
-          />
-        ) : (
-          <OutGoingCall
-            number={inputNumber || appName}
-            cancelCall={handleDecline}
-          />
-        )
-      ) : (
+      {pageView === PAGE_VIEW.DIAL_PAD && (
         <VStack
           spacing={2}
           w="full"
@@ -539,7 +544,7 @@ export const Phone = ({
             <HStack spacing={2} align="start" w="full">
               {registeredUser.allow_direct_user_calling && (
                 <IconButtonMenu
-                  icon={<Users />}
+                  icon={<FontAwesomeIcon icon={faUserGroup} />}
                   tooltip="Call an online user"
                   noResultLabel="No one else is online"
                   onClick={(_, value) => {
@@ -551,7 +556,9 @@ export const Phone = ({
                       (resolve, reject) => {
                         getRegisteredUser()
                           .then(({ json }) => {
-                            const sortedUsers = json.sort((a, b) => a.localeCompare(b));
+                            const sortedUsers = json.sort((a, b) =>
+                              a.localeCompare(b)
+                            );
                             resolve(
                               sortedUsers
                                 .filter((u) => !u.includes(sipUsername))
@@ -573,7 +580,7 @@ export const Phone = ({
 
               {registeredUser.allow_direct_queue_calling && (
                 <IconButtonMenu
-                  icon={<List />}
+                  icon={<FontAwesomeIcon icon={faList} />}
                   tooltip="Take a call from queue"
                   noResultLabel="No calls in queue"
                   onClick={(name, value) => {
@@ -587,7 +594,9 @@ export const Phone = ({
                       (resolve, reject) => {
                         getQueues()
                           .then(({ json }) => {
-                            const sortedQueues = json.sort((a, b) => a.name.localeCompare(b.name));
+                            const sortedQueues = json.sort((a, b) =>
+                              a.name.localeCompare(b.name)
+                            );
                             resolve(
                               sortedQueues.map((q) => ({
                                 name: `${q.name} (${q.length})`,
@@ -604,7 +613,7 @@ export const Phone = ({
 
               {registeredUser.allow_direct_app_calling && (
                 <IconButtonMenu
-                  icon={<GitMerge />}
+                  icon={<FontAwesomeIcon icon={faCodeMerge} />}
                   tooltip="Call an application"
                   noResultLabel="No applications"
                   onClick={(name, value) => {
@@ -618,13 +627,53 @@ export const Phone = ({
                       (resolve, reject) => {
                         getApplications()
                           .then(({ json }) => {
-                            const sortedApps = json.sort((a, b) => a.name.localeCompare(b.name));
+                            const sortedApps = json.sort((a, b) =>
+                              a.name.localeCompare(b.name)
+                            );
                             resolve(
                               sortedApps.map((a) => ({
                                 name: a.name,
                                 value: a.application_sid,
                               }))
                             );
+                          })
+                          .catch((err) => reject(err));
+                      }
+                    );
+                  }}
+                />
+              )}
+              {registeredUser.allow_direct_app_calling && (
+                <IconButtonMenu
+                  icon={<FontAwesomeIcon icon={faPeopleGroup} />}
+                  tooltip="Join a conference"
+                  noResultLabel="No conference"
+                  onClick={(name, value) => {
+                    setPageView(PAGE_VIEW.JOIN_CONFERENCE);
+                    setSelectedConference(
+                      value === PAGE_VIEW.JOIN_CONFERENCE.toString()
+                        ? ""
+                        : value
+                    );
+                  }}
+                  onOpen={() => {
+                    return new Promise<IconButtonMenuItems[]>(
+                      (resolve, reject) => {
+                        getConferences()
+                          .then(({ json }) => {
+                            const sortedApps = json.sort((a, b) =>
+                              a.localeCompare(b)
+                            );
+                            resolve([
+                              {
+                                name: "Start new conference",
+                                value: PAGE_VIEW.JOIN_CONFERENCE.toString(),
+                              },
+                              ...sortedApps.map((a) => ({
+                                name: a,
+                                value: a,
+                              })),
+                            ]);
                           })
                           .catch((err) => reject(err));
                       }
@@ -680,7 +729,11 @@ export const Phone = ({
                 <IconButton
                   aria-label="Place call onhold"
                   icon={
-                    sipUA.current?.isHolded(undefined) ? <Play /> : <Pause />
+                    <FontAwesomeIcon
+                      icon={
+                        sipUA.current?.isHolded(undefined) ? faPlay : faPause
+                      }
+                    />
                   }
                   w="33%"
                   variant="unstyled"
@@ -694,7 +747,7 @@ export const Phone = ({
               <Spacer />
               <IconButton
                 aria-label="Hangup"
-                icon={<PhoneOff />}
+                icon={<FontAwesomeIcon icon={faPhoneSlash} />}
                 w="70px"
                 h="70px"
                 borderRadius="100%"
@@ -708,7 +761,13 @@ export const Phone = ({
                 <IconButton
                   aria-label="Mute"
                   icon={
-                    sipUA.current?.isMuted(undefined) ? <Mic /> : <MicOff />
+                    <FontAwesomeIcon
+                      icon={
+                        sipUA.current?.isMuted(undefined)
+                          ? faMicrophone
+                          : faMicrophoneSlash
+                      }
+                    />
                   }
                   w="33%"
                   variant="unstyled"
@@ -721,6 +780,39 @@ export const Phone = ({
             </HStack>
           )}
         </VStack>
+      )}
+      {pageView === PAGE_VIEW.INCOMING_CALL && (
+        <IncommingCall
+          number={inputNumber}
+          answer={handleAnswer}
+          decline={handleDecline}
+        />
+      )}
+      {pageView === PAGE_VIEW.OUTGOING_CALL && (
+        <OutGoingCall
+          number={inputNumber || appName}
+          cancelCall={handleDecline}
+        />
+      )}
+      {pageView === PAGE_VIEW.JOIN_CONFERENCE && (
+        <JoinConference
+          conferenceId={selectedConference}
+          callSid={callSid}
+          callDuration={seconds}
+          callStatus={callStatus}
+          handleCancel={() => {
+            if (isSipClientAnswered(callStatus)) {
+              sipUA.current?.terminate(480, "Call Finished", undefined);
+            }
+            setPageView(PAGE_VIEW.DIAL_PAD);
+          }}
+          call={(name) => {
+            const conference = `conference-${name}`;
+            setSelectedConference(name);
+            setInputNumber(conference);
+            makeOutboundCall(conference, `Conference ${name}`);
+          }}
+        />
       )}
     </Center>
   );

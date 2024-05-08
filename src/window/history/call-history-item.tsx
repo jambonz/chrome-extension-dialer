@@ -1,21 +1,21 @@
 import {
   HStack,
-  Icon,
   IconButton,
   Spacer,
   Text,
   Tooltip,
   VStack,
 } from "@chakra-ui/react";
+import {
+  faArrowRightFromBracket,
+  faArrowRightToBracket,
+  faPhone,
+  faSave,
+  faTrash,
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import dayjs from "dayjs";
 import { useState } from "react";
-import {
-  Phone,
-  PhoneIncoming,
-  PhoneOutgoing,
-  Save,
-  Trash2,
-} from "react-feather";
 import { CallHistory, SipCallDirection } from "src/common/types";
 import { getSettings, isSaveCallHistory } from "src/storage";
 import { formatPhoneNumber } from "src/utils";
@@ -36,11 +36,11 @@ export const CallHistoryItem = ({
   const [callEnable, setCallEnable] = useState(false);
   const getDirectionIcon = (direction: SipCallDirection) => {
     if (direction === "outgoing") {
-      return PhoneOutgoing;
+      return faArrowRightFromBracket;
     } else if (direction === "incoming") {
-      return PhoneIncoming;
+      return faArrowRightToBracket;
     } else {
-      return Phone;
+      return faPhone;
     }
   };
 
@@ -57,7 +57,7 @@ export const CallHistoryItem = ({
         <Tooltip label="Call">
           <IconButton
             aria-label="call recents"
-            icon={<Phone />}
+            icon={<FontAwesomeIcon icon={faPhone} />}
             onClick={() => {
               if (onCallNumber) {
                 onCallNumber(call.number, call.name);
@@ -69,7 +69,11 @@ export const CallHistoryItem = ({
           />
         </Tooltip>
       ) : (
-        <Icon as={getDirectionIcon(call.direction)} w="20px" h="20px" />
+        <FontAwesomeIcon
+          icon={getDirectionIcon(call.direction)}
+          width="20px"
+          height="20px"
+        />
       )}
 
       <VStack align="start">
@@ -88,7 +92,11 @@ export const CallHistoryItem = ({
       <Tooltip label={isSaved && call.isSaved ? "Delete" : "Save"}>
         <IconButton
           aria-label="save recents"
-          icon={isSaved && call.isSaved ? <Trash2 /> : <Save />}
+          icon={
+            <FontAwesomeIcon
+              icon={isSaved && call.isSaved ? faTrash : faSave}
+            />
+          }
           onClick={() => {
             if (!isSaved && call.isSaved) {
               return;
