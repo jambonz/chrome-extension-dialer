@@ -65,7 +65,6 @@ export default class SipSession extends events.EventEmitter {
     this.#rtcSession.on(
       "accepted",
       ({ response }: { response: IncomingResponse }) => {
-        console.log("xquanluu");
         this.emit(SipConstants.SESSION_ANSWERED, {
           status: SipConstants.SESSION_ANSWERED,
           callSid: response.hasHeader("X-Call-Sid")
