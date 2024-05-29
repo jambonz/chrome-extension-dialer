@@ -1,3 +1,5 @@
+import { ConferenceModes } from "src/api/types";
+
 export interface LoginCredential {
   name?: string;
   password?: string;
@@ -55,6 +57,12 @@ export interface AppSettings {
   sipUsername: string;
   sipPassword: string;
   sipDisplayName: string;
+}
+
+export interface ConferenceSettings {
+  mode: ConferenceModes;
+  tags: string;
+  speakOnlyTo: string;
 }
 
 export interface AdvancedAppSettings {
