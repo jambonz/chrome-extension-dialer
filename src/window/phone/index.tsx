@@ -114,6 +114,7 @@ export const Phone = ({
   );
   const [selectedConference, setSelectedConference] = useState("");
   const [callSid, setCallSid] = useState("");
+  const [showConference, setShowConference] = useState(false);
 
   const inputNumberRef = useRef(inputNumber);
   const sessionDirectionRef = useRef(sessionDirection);
@@ -154,6 +155,13 @@ export const Phone = ({
       clientGoOffline();
     }
     fetchRegisterUser();
+    getConferences()
+      .then(() => {
+        setShowConference(true);
+      })
+      .catch(() => {
+        setShowConference(false);
+      });
   }, [sipDomain, sipUsername, sipPassword, sipServerAddress, sipDisplayName]);
 
   useEffect(() => {
@@ -643,7 +651,7 @@ export const Phone = ({
                   }}
                 />
               )}
-              {registeredUser.allow_direct_app_calling && (
+              {registeredUser.allow_direct_app_calling && showConference && (
                 <IconButtonMenu
                   icon={<FontAwesomeIcon icon={faPeopleGroup} />}
                   tooltip="Join a conference"

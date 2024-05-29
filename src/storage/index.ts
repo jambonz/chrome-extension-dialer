@@ -2,9 +2,26 @@ import {
   AdvancedAppSettings,
   AppSettings,
   CallHistory,
+  ConferenceSettings,
 } from "src/common/types";
 import { Buffer } from "buffer";
 
+// Conference settings
+const CONFERENCE_SETTINGS = "ConferenceSettingsKey";
+
+export const saveConferenceSettings = (settings: ConferenceSettings) => {
+  sessionStorage.setItem(CONFERENCE_SETTINGS, JSON.stringify(settings));
+};
+
+export const getConferenceSettings = (): ConferenceSettings => {
+  return JSON.parse(
+    sessionStorage.getItem(CONFERENCE_SETTINGS) || "{}"
+  ) as ConferenceSettings;
+};
+
+export const deleteConferenceSettings = () => {
+  sessionStorage.removeItem(CONFERENCE_SETTINGS);
+};
 // Settings
 const SETTINGS_KEY = "SettingsKey";
 

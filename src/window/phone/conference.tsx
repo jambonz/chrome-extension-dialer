@@ -1,7 +1,6 @@
 import {
   Box,
   Button,
-  Checkbox,
   FormControl,
   FormLabel,
   HStack,
@@ -9,13 +8,20 @@ import {
   Radio,
   RadioGroup,
   Text,
+  useToast,
   VStack,
 } from "@chakra-ui/react";
 import { FormEvent, useEffect, useState } from "react";
 import { updateConferenceParticipantAction } from "src/api";
 import { ConferenceModes } from "src/api/types";
+import { DEFAULT_TOAST_DURATION } from "src/common/constants";
 import OutlineBox from "src/components/outline-box";
 import { SipConstants } from "src/lib";
+import {
+  deleteConferenceSettings,
+  getConferenceSettings,
+  saveConferenceSettings,
+} from "src/storage";
 
 type JoinConferenceProbs = {
   conferenceId?: string;
@@ -33,6 +39,7 @@ export const JoinConference = ({
   handleCancel,
   call,
 }: JoinConferenceProbs) => {
+  const toast = useToast();
   const [conferenceName, setConferenceName] = useState(conferenceId || "");
   const [appTitle, setAppTitle] = useState(
     !!conferenceId ? "Joining Conference" : "Start Conference"
@@ -40,11 +47,17 @@ export const JoinConference = ({
   const [submitTitle, setSubmitTitle] = useState(
     !!conferenceId ? "Joining Conference" : "Start Conference"
   );
+
   const [cancelTitle, setCancelTitle] = useState("Cancel");
   const [isLoading, setIsLoading] = useState(false);
-  const [speakOnlyTo, setSpeakOnlyTo] = useState("");
-  const [tags, setTags] = useState("");
-  const [mode, setMode] = useState<ConferenceModes>("full_participant");
+  const confSettings = getConferenceSettings();
+  const [speakOnlyTo, setSpeakOnlyTo] = useState(
+    confSettings.speakOnlyTo || ""
+  );
+  const [tags, setTags] = useState(confSettings.tags || "");
+  const [mode, setMode] = useState<ConferenceModes>(
+    confSettings.mode || "full_participant"
+  );
   const [participantState, setParticipantState] = useState("Join as");
 
   useEffect(() => {
@@ -60,20 +73,10 @@ export const JoinConference = ({
       case SipConstants.SESSION_ENDED:
       case SipConstants.SESSION_FAILED:
         setIsLoading(false);
+        deleteConferenceSettings();
         break;
     }
   }, [callStatus]);
-
-  useEffect(() => {
-    switch (mode) {
-      case "full_participant":
-        break;
-      case "muted":
-        break;
-      case "coach":
-        break;
-    }
-  }, [mode]);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -88,21 +91,49 @@ export const JoinConference = ({
   };
 
   const configureConferenceSession = async () => {
+    const confSettings = getConferenceSettings();
     if (callSid) {
-      await updateConferenceParticipantAction(callSid, {
-        action: mode === "muted" ? "mute" : "unmute",
-        tag: "",
-      });
+      if (confSettings.mode) {
+        updateConferenceParticipantAction(callSid, {
+          action: confSettings.mode === "muted" ? "mute" : "unmute",
+          tag: "",
+        })
+          .then(() => {
+            updateConferenceParticipantAction(callSid, {
+              action: mode === "coach" ? "coach" : "uncoach",
+              tag: confSettings.speakOnlyTo,
+            }).catch((error) => {
+              toast({
+                title: error.msg,
+                status: "error",
+                duration: DEFAULT_TOAST_DURATION,
+                isClosable: true,
+              });
+            });
+          })
+          .catch((error) => {
+            toast({
+              title: error.msg,
+              status: "error",
+              duration: DEFAULT_TOAST_DURATION,
+              isClosable: true,
+            });
+          });
+      }
 
-      await updateConferenceParticipantAction(callSid, {
-        action: tags ? "tag" : "untag",
-        tag: tags,
-      });
-
-      await updateConferenceParticipantAction(callSid, {
-        action: mode === "coach" ? "coach" : "uncoach",
-        tag: speakOnlyTo,
-      });
+      if (confSettings.tags) {
+        updateConferenceParticipantAction(callSid, {
+          action: tags ? "tag" : "untag",
+          tag: tags,
+        }).catch((error) => {
+          toast({
+            title: error.msg,
+            status: "error",
+            duration: DEFAULT_TOAST_DURATION,
+            isClosable: true,
+          });
+        });
+      }
     }
   };
 
@@ -131,7 +162,14 @@ export const JoinConference = ({
 
         <OutlineBox title={participantState}>
           <RadioGroup
-            onChange={(e) => setMode(e as ConferenceModes)}
+            onChange={(e) => {
+              setMode(e as ConferenceModes);
+              saveConferenceSettings({
+                mode: e as ConferenceModes,
+                speakOnlyTo,
+                tags,
+              });
+            }}
             value={mode}
             colorScheme="jambonz"
           >
@@ -150,7 +188,14 @@ export const JoinConference = ({
               type="text"
               placeholder="tag"
               value={speakOnlyTo}
-              onChange={(e) => setSpeakOnlyTo(e.target.value)}
+              onChange={(e) => {
+                setSpeakOnlyTo(e.target.value);
+                saveConferenceSettings({
+                  mode,
+                  speakOnlyTo: e.target.value,
+                  tags,
+                });
+              }}
               disabled={mode !== "coach"}
               required={mode === "coach"}
             />
@@ -162,7 +207,14 @@ export const JoinConference = ({
               type="text"
               placeholder="tag"
               value={tags}
-              onChange={(e) => setTags(e.target.value)}
+              onChange={(e) => {
+                setTags(e.target.value);
+                saveConferenceSettings({
+                  mode,
+                  speakOnlyTo,
+                  tags: e.target.value,
+                });
+              }}
             />
           </FormControl>
         </OutlineBox>
@@ -181,7 +233,10 @@ export const JoinConference = ({
             type="button"
             w="full"
             textColor="black"
-            onClick={handleCancel}
+            onClick={() => {
+              deleteConferenceSettings();
+              handleCancel();
+            }}
           >
             {cancelTitle}
           </Button>
