@@ -5,25 +5,17 @@ import {
   TabPanel,
   TabPanels,
   Tabs,
-  Text,
   Grid,
-  Center,
-  HStack,
-  Image,
 } from "@chakra-ui/react";
 import Phone from "./phone";
 import Settings from "./settings";
 import { DEFAULT_COLOR_SCHEME } from "src/common/constants";
 import { useEffect, useState } from "react";
-import {
-  getAdvancedSettings,
-  getCallHistories,
-  getSettings,
-} from "src/storage";
+import { getActiveSettings, getCallHistories, getSettings } from "src/storage";
 
-import jambonz from "src/imgs/jambonz.svg";
 import CallHistories from "./history";
-import { AdvancedAppSettings, CallHistory } from "src/common/types";
+import { CallHistory, IAppSettings, SipClientStatus } from "src/common/types";
+import Footer from "./footer/footer";
 
 export const WindowApp = () => {
   const [sipDomain, setSipDomain] = useState("");
@@ -35,9 +27,26 @@ export const WindowApp = () => {
   const [calledNumber, setCalledNumber] = useState("");
   const [calledName, setCalledName] = useState("");
   const [tabIndex, setTabIndex] = useState(0);
-  const [advancedSettings, setAdvancedSettings] = useState<AdvancedAppSettings>(
-    getAdvancedSettings()
+  const [status, setStatus] = useState<SipClientStatus>("stop");
+  const [allSettings, setAllSettings] = useState<IAppSettings[]>([]);
+  const [advancedSettings, setAdvancedSettings] = useState<IAppSettings | null>(
+    null
   );
+
+  const loadSettings = () => {
+    const settings = getSettings();
+
+    const activeSettings = settings.find((el) => el.active);
+
+    setAllSettings(getSettings());
+    setAdvancedSettings(getActiveSettings());
+    setSipDomain(activeSettings?.decoded.sipDomain || "");
+    setSipServerAddress(activeSettings?.decoded.sipServerAddress || "");
+    setSipUsername(activeSettings?.decoded.sipUsername || "");
+    setSipPassword(activeSettings?.decoded.sipPassword || "");
+    setSipDisplayName(activeSettings?.decoded.sipDisplayName || "");
+  };
+
   const tabsSettings = [
     {
       title: "Dialer",
@@ -50,7 +59,10 @@ export const WindowApp = () => {
           sipServerAddress={sipServerAddress}
           calledNumber={[calledNumber, setCalledNumber]}
           calledName={[calledName, setCalledName]}
+          stat={[status, setStatus]}
           advancedSettings={advancedSettings}
+          allSettings={allSettings}
+          reload={loadSettings}
         />
       ),
     },
@@ -83,16 +95,6 @@ export const WindowApp = () => {
     setTabIndex(i);
     setCallHistories(getCallHistories(sipUsername));
   };
-
-  const loadSettings = () => {
-    const settings = getSettings();
-    setAdvancedSettings(getAdvancedSettings());
-    setSipDomain(settings.sipDomain);
-    setSipServerAddress(settings.sipServerAddress);
-    setSipUsername(settings.sipUsername);
-    setSipPassword(settings.sipPassword);
-    setSipDisplayName(settings.sipDisplayName);
-  };
   return (
     <Grid h="100vh" templateRows="1fr auto">
       <Box p={2}>
@@ -122,12 +124,16 @@ export const WindowApp = () => {
           </TabPanels>
         </Tabs>
       </Box>
-      <Center>
-        <HStack spacing={1} mb={2} align="start">
-          <Text fontSize="14px">Powered by</Text>
-          <Image src={jambonz} alt="Jambonz Logo" w="91px" h="31px" />
-        </HStack>
-      </Center>
+
+      <Footer
+        sipServerAddress={sipServerAddress}
+        sipUsername={sipUsername}
+        sipDomain={sipDomain}
+        sipDisplayName={sipDisplayName}
+        sipPassword={sipPassword}
+        status={status}
+        setStatus={setStatus}
+      />
     </Grid>
   );
 };

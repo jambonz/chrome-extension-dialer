@@ -1,8 +1,8 @@
 import { Box, Text } from "@chakra-ui/react";
 
 type JambonzSwitchProbs = {
-  onlabel: string;
-  offLabel: string;
+  onlabel?: string;
+  offLabel?: string;
   checked: [boolean, React.Dispatch<React.SetStateAction<boolean>>];
   isDisabled?: boolean;
   onChange: (value: boolean) => void;
@@ -17,7 +17,7 @@ function JambonzSwitch({
   return (
     <Box
       position="relative"
-      w="90px"
+      w="50px"
       h="30px"
       bg={isToggled ? "green.500" : "grey.500"}
       borderRadius="full"
@@ -30,22 +30,24 @@ function JambonzSwitch({
       }}
       _hover={{ cursor: "pointer" }}
     >
-      <Text
-        position="absolute"
-        top="50%"
-        left={isToggled ? "40%" : "60%"}
-        transform="translate(-50%, -50%)"
-        color={isToggled ? "white" : "black"}
-        fontWeight="bold"
-      >
-        {isToggled ? onlabel : offLabel}
-      </Text>
+      {onlabel && offLabel && (
+        <Text
+          position="absolute"
+          top="50%"
+          left={isToggled ? "40%" : "60%"}
+          transform="translate(-50%, -50%)"
+          color={isToggled ? "white" : "black"}
+          fontWeight="bold"
+        >
+          {isToggled ? onlabel : offLabel}
+        </Text>
+      )}
       <Box
         position="absolute"
         top="50%"
-        left={isToggled ? "70%" : "5%"}
-        w="24px"
-        h="24px"
+        left={isToggled ? "50%" : "5%"}
+        w="22px"
+        h="22px"
         bg="white"
         borderRadius="full"
         transform="translateY(-50%)"

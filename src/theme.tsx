@@ -47,4 +47,9 @@ const mainTheme = extendTheme({
   },
 });
 
+export const colors = {
+  //to use outside of chakra component
+  jambonz: "#DA1C5C",
+};
+
 export default mainTheme;

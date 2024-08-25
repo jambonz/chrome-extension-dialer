@@ -2,3 +2,11 @@
   filter: blur(5px);
   pointer-events: none;
 }
+.relative {
+  position: relative;
+}
+.absolute {
+  position: absolute;
+  top: 5px;
+  left: 0;
+}

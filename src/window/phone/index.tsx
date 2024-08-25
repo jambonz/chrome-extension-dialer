@@ -1,6 +1,6 @@
 import {
+  Box,
   Button,
-  Center,
   Circle,
   HStack,
   Heading,
@@ -13,9 +13,9 @@ import {
   VStack,
   useToast,
 } from "@chakra-ui/react";
-import { useEffect, useRef, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
 import {
-  AdvancedAppSettings,
+  IAppSettings,
   SipCallDirection,
   SipClientStatus,
 } from "src/common/types";
@@ -36,6 +36,7 @@ import {
   getCurrentCall,
   saveCallHistory,
   saveCurrentCall,
+  setActiveSettings,
 } from "src/storage";
 import { OutGoingCall } from "./outgoing-call";
 import { v4 as uuidv4 } from "uuid";
@@ -47,10 +48,10 @@ import {
   getRegisteredUser,
   getSelfRegisteredUser,
 } from "src/api";
-import JambonzSwitch from "src/components/switch";
 import { DEFAULT_TOAST_DURATION } from "src/common/constants";
 import { RegisteredUser } from "src/api/types";
 import {
+  faChevronDown,
   faCodeMerge,
   faList,
   faMicrophone,
@@ -63,6 +64,8 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import JoinConference from "./conference";
+import AnimateOnShow from "src/components/animate";
+import AvailableAccounts from "./availableAccounts";
 
 type PhoneProbs = {
   sipDomain: string;
@@ -72,7 +75,10 @@ type PhoneProbs = {
   sipDisplayName: string;
   calledNumber: [string, React.Dispatch<React.SetStateAction<string>>];
   calledName: [string, React.Dispatch<React.SetStateAction<string>>];
-  advancedSettings: AdvancedAppSettings;
+  advancedSettings: IAppSettings | null;
+  stat: [string, Dispatch<SetStateAction<SipClientStatus>>];
+  allSettings: IAppSettings[];
+  reload: () => void;
 };
 
 enum PAGE_VIEW {
@@ -82,19 +88,24 @@ enum PAGE_VIEW {
   JOIN_CONFERENCE,
 }
 
+// add some basic details to advanced to match them, make basic compulsory to fill advanced.
+
 export const Phone = ({
   sipDomain,
   sipServerAddress,
   sipUsername,
   sipPassword,
   sipDisplayName,
+  stat: [status, setStatus],
   calledNumber: [calledANumber, setCalledANumber],
   calledName: [calledAName, setCalledAName],
   advancedSettings,
+  allSettings,
+  reload,
 }: PhoneProbs) => {
   const [inputNumber, setInputNumber] = useState("");
   const [appName, setAppName] = useState("");
-  const [status, setStatus] = useState<SipClientStatus>("stop");
+  // const [status, setStatus] = useState<SipClientStatus>("stop");
   const [isConfigured, setIsConfigured] = useState(false);
   const [callStatus, setCallStatus] = useState(SipConstants.SESSION_ENDED);
   const [sessionDirection, setSessionDirection] =
@@ -115,6 +126,8 @@ export const Phone = ({
   const [selectedConference, setSelectedConference] = useState("");
   const [callSid, setCallSid] = useState("");
   const [showConference, setShowConference] = useState(false);
+
+  const [showAccounts, setShowAccounts] = useState(false);
 
   const inputNumberRef = useRef(inputNumber);
   const sessionDirectionRef = useRef(sessionDirection);
@@ -156,7 +169,7 @@ export const Phone = ({
     }
     fetchRegisterUser();
     getConferences()
-      .then(() => {
+      ?.then(() => {
         setShowConference(true);
       })
       .catch(() => {
@@ -165,7 +178,7 @@ export const Phone = ({
   }, [sipDomain, sipUsername, sipPassword, sipServerAddress, sipDisplayName]);
 
   useEffect(() => {
-    setIsAdvancedMode(!!advancedSettings.accountSid);
+    setIsAdvancedMode(!!advancedSettings?.decoded?.accountSid);
     fetchRegisterUser();
   }, [advancedSettings]);
 
@@ -440,21 +453,6 @@ export const Phone = ({
     }
   };
 
-  const handleGoOffline = (s: SipClientStatus) => {
-    if (s === status) {
-      return;
-    }
-    if (s === "unregistered") {
-      if (sipUA.current) {
-        sipUA.current.stop();
-      }
-    } else {
-      if (sipUA.current) {
-        sipUA.current.start();
-      }
-    }
-  };
-
   const handleHangup = () => {
     if (isSipClientAnswered(callStatus) || isSipClientRinging(callStatus)) {
       sipUA.current?.terminate(480, "Call Finished", undefined);
@@ -497,47 +495,68 @@ export const Phone = ({
     return status === "registered";
   };
 
+  const handleSetActive = (id: number) => {
+    setActiveSettings(id);
+    setShowAccounts(false);
+    reload();
+  };
+
   return (
-    <Center flexDirection="column">
+    <Box flexDirection="column">
       {isConfigured ? (
         <>
-          <HStack spacing={2} boxShadow="md" w="full" borderRadius={5} p={2}>
-            <Image
-              src={isStatusRegistered() ? GreenAvatar : Avatar}
-              boxSize="35px"
-            />
-            <VStack alignItems="start" w="full" spacing={0}>
-              <HStack spacing={2} w="full">
-                <Text fontWeight="bold" fontSize="13px">
-                  {sipDisplayName || sipUsername}
-                </Text>
-                <Circle
-                  size="8px"
-                  bg={isStatusRegistered() ? "green.500" : "gray.500"}
-                />
-              </HStack>
-              <Text fontWeight="bold" w="full">
-                {`${sipUsername}@${sipDomain}`}
-              </Text>
-            </VStack>
-
-            <Spacer />
-            <VStack h="full" align="center">
-              <JambonzSwitch
-                isDisabled={isSwitchingUserStatus}
-                onlabel="Online"
-                offLabel="Offline"
-                checked={[isOnline, setIsOnline]}
-                onChange={(v) => {
-                  setIsSwitchingUserStatus(true);
-                  handleGoOffline(v ? "registered" : "unregistered");
-                }}
+          <Text fontSize={"small"} fontWeight={"semibold"} color={"gray.600"}>
+            Account
+          </Text>
+          <Box className="relative" w={"full"}>
+            <HStack
+              onClick={() => setShowAccounts(true)}
+              _hover={{
+                cursor: "pointer",
+              }}
+              spacing={2}
+              boxShadow="md"
+              w="full"
+              borderRadius={5}
+              paddingY={2}
+              paddingX={3.5}
+            >
+              <Image
+                src={isStatusRegistered() ? GreenAvatar : Avatar}
+                boxSize="35px"
               />
-            </VStack>
-          </HStack>
+              <VStack alignItems="start" w="full" spacing={0}>
+                <HStack spacing={2} w="full">
+                  <Text fontWeight="bold" fontSize="13px">
+                    {sipDisplayName || sipUsername}
+                  </Text>
+                  <Circle
+                    size="8px"
+                    bg={isStatusRegistered() ? "green.500" : "gray.500"}
+                  />
+                </HStack>
+                <Text fontWeight="bold" w="full">
+                  {`${sipUsername}@${sipDomain}`}
+                </Text>
+              </VStack>
+
+              <Spacer />
+              <VStack h="full" align="center">
+                <FontAwesomeIcon icon={faChevronDown} />
+              </VStack>
+            </HStack>
+            {showAccounts && (
+              <AnimateOnShow initial={2} exit={0} duration={0.01}>
+                <AvailableAccounts
+                  allSettings={allSettings}
+                  onSetActive={handleSetActive}
+                />
+              </AnimateOnShow>
+            )}
+          </Box>
         </>
       ) : (
-        <Heading size="md" mb={2}>
+        <Heading textAlign={"center"} size="md" mb={2}>
           Go to Settings to configure your account
         </Heading>
       )}
@@ -822,7 +841,7 @@ export const Phone = ({
           }}
         />
       )}
-    </Center>
+    </Box>
   );
 };
 

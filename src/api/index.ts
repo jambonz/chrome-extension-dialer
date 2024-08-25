@@ -10,7 +10,7 @@ import {
   UpdateCall,
 } from "./types";
 import { MSG_SOMETHING_WRONG } from "./constants";
-import { getAdvancedSettings } from "src/storage";
+import { getActiveSettings } from "src/storage";
 import { EmptyData } from "src/common/types";
 
 const fetchTransport = <Type>(
@@ -87,8 +87,8 @@ const fetchTransport = <Type>(
 };
 
 const getAuthHeaders = () => {
-  const advancedSettings = getAdvancedSettings();
-  let token = advancedSettings.apiKey ?? null;
+  const advancedSettings = getActiveSettings();
+  let token = advancedSettings?.decoded?.apiKey ?? null;
 
   return {
     "Content-Type": "application/json",
@@ -130,37 +130,37 @@ export const deleteFetch = <Type>(url: string) => {
 
 // GET Devices Users
 export const getRegisteredUser = () => {
-  const advancedSettings = getAdvancedSettings();
+  const advancedSettings = getActiveSettings();
   return getFetch<string[]>(
-    `${advancedSettings.apiServer}/Accounts/${advancedSettings.accountSid}/RegisteredSipUsers`
+    `${advancedSettings?.decoded?.apiServer}/Accounts/${advancedSettings?.decoded?.accountSid}/RegisteredSipUsers`
   );
 };
 
 export const getApplications = () => {
-  const advancedSettings = getAdvancedSettings();
+  const advancedSettings = getActiveSettings();
   return getFetch<Application[]>(
-    `${advancedSettings.apiServer}/Accounts/${advancedSettings.accountSid}/Applications`
+    `${advancedSettings?.decoded?.apiServer}/Accounts/${advancedSettings?.decoded?.accountSid}/Applications`
   );
 };
 
 export const getQueues = () => {
-  const advancedSettings = getAdvancedSettings();
+  const advancedSettings = getActiveSettings();
   return getFetch<Queue[]>(
-    `${advancedSettings.apiServer}/Accounts/${advancedSettings.accountSid}/Queues`
+    `${advancedSettings?.decoded?.apiServer}/Accounts/${advancedSettings?.decoded?.accountSid}/Queues`
   );
 };
 
 export const getSelfRegisteredUser = (username: string) => {
-  const advancedSettings = getAdvancedSettings();
+  const advancedSettings = getActiveSettings();
   return getFetch<RegisteredUser>(
-    `${advancedSettings.apiServer}/Accounts/${advancedSettings.accountSid}/RegisteredSipUsers/${username}`
+    `${advancedSettings?.decoded?.apiServer}/Accounts/${advancedSettings?.decoded?.accountSid}/RegisteredSipUsers/${username}`
   );
 };
 
 export const getConferences = () => {
-  const advancedSettings = getAdvancedSettings();
+  const advancedSettings = getActiveSettings();
   return getFetch<string[]>(
-    `${advancedSettings.apiServer}/Accounts/${advancedSettings.accountSid}/Conferences`
+    `${advancedSettings?.decoded?.apiServer}/Accounts/${advancedSettings?.decoded?.accountSid}/Conferences`
   );
 };
 
@@ -168,9 +168,9 @@ export const updateConferenceParticipantAction = (
   callSid: string,
   payload: ConferenceParticipantAction
 ) => {
-  const advancedSettings = getAdvancedSettings();
+  const advancedSettings = getActiveSettings();
   return putFetch<EmptyData, UpdateCall>(
-    `${advancedSettings.apiServer}/Accounts/${advancedSettings.accountSid}/Calls/${callSid}`,
+    `${advancedSettings?.decoded?.apiServer}/Accounts/${advancedSettings?.decoded?.accountSid}/Calls/${callSid}`,
     {
       conferenceParticipantAction: payload,
     }
