@@ -2,7 +2,13 @@ import { HStack, Text, VStack } from "@chakra-ui/react";
 import React from "react";
 import { IAppSettings } from "src/common/types";
 
-function SettingItem({ data }: { data: IAppSettings }) {
+function SettingItem({
+  data,
+  onToggleAcc,
+}: {
+  data: IAppSettings;
+  onToggleAcc: () => void;
+}) {
   return (
     <HStack
       w={"full"}
@@ -13,6 +19,11 @@ function SettingItem({ data }: { data: IAppSettings }) {
       justifyContent={"start"}
       borderRadius={"2xl"}
       padding={"2.5"}
+      onClick={onToggleAcc}
+      _hover={{
+        backgroundColor: "gray.200",
+        cursor: "pointer",
+      }}
     >
       <VStack gap={"0"} alignItems={"start"}>
         <Text fontWeight={"bold"}>

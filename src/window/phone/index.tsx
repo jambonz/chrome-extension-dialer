@@ -503,48 +503,56 @@ export const Phone = ({
 
   return (
     <Box flexDirection="column">
-      {isConfigured ? (
+      {allSettings.length >= 1 ? (
         <>
           <Text fontSize={"small"} fontWeight={"semibold"} color={"gray.600"}>
             Account
           </Text>
           <Box className="relative" w={"full"}>
-            <HStack
-              onClick={() => setShowAccounts(true)}
-              _hover={{
-                cursor: "pointer",
-              }}
-              spacing={2}
-              boxShadow="md"
-              w="full"
-              borderRadius={5}
-              paddingY={2}
-              paddingX={3.5}
-            >
-              <Image
-                src={isStatusRegistered() ? GreenAvatar : Avatar}
-                boxSize="35px"
-              />
-              <VStack alignItems="start" w="full" spacing={0}>
-                <HStack spacing={2} w="full">
-                  <Text fontWeight="bold" fontSize="13px">
-                    {sipDisplayName || sipUsername}
-                  </Text>
-                  <Circle
-                    size="8px"
-                    bg={isStatusRegistered() ? "green.500" : "gray.500"}
-                  />
-                </HStack>
-                <Text fontWeight="bold" w="full">
-                  {`${sipUsername}@${sipDomain}`}
-                </Text>
-              </VStack>
+            {
+              <HStack
+                onClick={() => setShowAccounts(true)}
+                _hover={{
+                  cursor: "pointer",
+                }}
+                spacing={2}
+                boxShadow="md"
+                w="full"
+                borderRadius={5}
+                paddingY={2}
+                paddingX={3.5}
+              >
+                {sipUsername && sipDomain ? (
+                  <>
+                    <Image
+                      src={isStatusRegistered() ? GreenAvatar : Avatar}
+                      boxSize="35px"
+                    />
+                    <VStack alignItems="start" w="full" spacing={0}>
+                      <HStack spacing={2} w="full">
+                        <Text fontWeight="bold" fontSize="13px">
+                          {sipDisplayName || sipUsername}
+                        </Text>
+                        <Circle
+                          size="8px"
+                          bg={isStatusRegistered() ? "green.500" : "gray.500"}
+                        />
+                      </HStack>
+                      <Text fontWeight="bold" w="full">
+                        {`${sipUsername}@${sipDomain}`}
+                      </Text>
+                    </VStack>
 
-              <Spacer />
-              <VStack h="full" align="center">
-                <FontAwesomeIcon icon={faChevronDown} />
-              </VStack>
-            </HStack>
+                    <Spacer />
+                    <VStack h="full" align="center">
+                      <FontAwesomeIcon icon={faChevronDown} />
+                    </VStack>
+                  </>
+                ) : (
+                  <Text fontWeight={"extrabold"}>Select Account</Text>
+                )}
+              </HStack>
+            }
             {showAccounts && (
               <AnimateOnShow initial={2} exit={0} duration={0.01}>
                 <AvailableAccounts

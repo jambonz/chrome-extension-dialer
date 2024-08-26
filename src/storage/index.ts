@@ -58,11 +58,16 @@ export const saveSettings = (settings: AppSettings) => {
         el.decoded.sipServerAddress === settings.sipServerAddress
     );
     if (!!alreadyExists.length) return;
+
     localStorage.setItem(
       SETTINGS_KEY,
       JSON.stringify([
         ...parsed,
-        { encoded, active: false, id: parsed.length + 1 },
+        {
+          encoded,
+          active: false,
+          id: parsed.length + 1,
+        },
       ])
     );
   } else {

@@ -20,6 +20,8 @@ import {
   faCheckCircle,
   faCircleXmark,
   faShuffle,
+  faSliders,
+  faSlidersH,
   faTrashCan,
 } from "@fortawesome/free-solid-svg-icons";
 import { normalizeUrl } from "src/utils";
@@ -228,6 +230,7 @@ function AccountForm({
           )}
           <Center flexDirection={"column"} gap={"2.5"}>
             <Button
+              variant={"ghost"}
               gap={"2.5"}
               alignItems={"center"}
               onClick={() => setShowAdvanced((prev) => !prev)}
@@ -236,7 +239,7 @@ function AccountForm({
                 {" "}
                 {showAdvanced ? "Hide" : "Show"} Advanced Settings
               </Text>
-              <FontAwesomeIcon color={colors.jambonz} icon={faShuffle} />
+              <FontAwesomeIcon color={colors.jambonz} icon={faSliders} />
             </Button>
           </Center>
         </VStack>
@@ -264,12 +267,20 @@ function AccountForm({
           mt={2}
         >
           <HStack>
-            <Button colorScheme="jambonz" type="submit" w="full">
+            <Button
+              textColor={"jambonz.500"}
+              fontWeight={"semibold"}
+              bg="jambonz.0"
+              type="submit"
+              w="full"
+            >
               Save
             </Button>
             <Button
+              variant={"ghost"}
               colorScheme="jambonz"
               type="reset"
+              fontWeight={"semibold"}
               w="full"
               onClick={resetSetting}
             >

@@ -3,6 +3,7 @@ import { extendTheme } from "@chakra-ui/react";
 const mainTheme = extendTheme({
   colors: {
     jambonz: {
+      0: "#EDDEE3",
       50: "#ffe1f1",
       100: "#ffb3c6",
       200: "#fc839d",
@@ -25,6 +26,9 @@ const mainTheme = extendTheme({
       700: "#969696",
       800: "#6D6D6D",
       900: "#434343",
+    },
+    blue: {
+      600: "#4492FF", //for toggle icon
     },
   },
   components: {

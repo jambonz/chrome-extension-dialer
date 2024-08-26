@@ -19,7 +19,7 @@ function JambonzSwitch({
       position="relative"
       w="50px"
       h="30px"
-      bg={isToggled ? "green.500" : "grey.500"}
+      bg={isToggled ? "blue.600" : "grey.500"}
       borderRadius="full"
       onClick={() => {
         if (!isDisabled) {

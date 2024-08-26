@@ -46,6 +46,13 @@ export const Settings = () => {
           Add Account
         </Button>
       )}
+
+      {showForm && (
+        <AnimateOnShow>
+          <AccountForm closeForm={handleCloseForm} />
+        </AnimateOnShow>
+      )}
+
       <Center marginBottom={"2.5"} flexDirection={"column"}>
         <Text>
           {allSettings.length} of {MAX_NUM_OF_ACCOUNTS}{" "}
@@ -54,12 +61,6 @@ export const Settings = () => {
           <Text>Limit has been reached</Text>
         )}
       </Center>
-
-      {showForm && (
-        <AnimateOnShow>
-          <AccountForm closeForm={handleCloseForm} />
-        </AnimateOnShow>
-      )}
 
       {/* <Tabs isFitted colorScheme={DEFAULT_COLOR_SCHEME}>
         <TabList mb="1em" gap={1}>

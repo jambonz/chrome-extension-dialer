@@ -32,9 +32,17 @@ export function AccordionList({
   return (
     <Accordion index={isOpen ? [openAcc] : []} allowToggle>
       {allSettings.map((data, index) => (
-        <AccordionItem key={index}>
-          <AccordionButton onClick={() => handleToggleAcc(index)}>
-            <SettingItem data={data} />
+        <AccordionItem borderColor={"white"} key={index}>
+          <AccordionButton
+            _hover={{
+              backgroundColor: "#fff",
+              cursor: "default",
+            }}
+          >
+            <SettingItem
+              onToggleAcc={() => handleToggleAcc(index)}
+              data={data}
+            />
           </AccordionButton>
           <AccordionPanel pb={4}>
             <AccountForm
