@@ -9,7 +9,8 @@ const mainTheme = extendTheme({
       200: "#fc839d",
       300: "#fa5575",
       400: "#f8274e",
-      500: "#DA1C5C",
+      500: "#BB225B",
+      550: "#DA1C5C",
       600: "#c60921",
       700: "#99081a",
       800: "#6c0714",
@@ -17,6 +18,7 @@ const mainTheme = extendTheme({
     },
     grey: {
       50: "#FFFFFF",
+      75: "#F9F9F9",
       100: "#F5F5F5",
       200: "#ECECEC",
       300: "#E3E3E3",

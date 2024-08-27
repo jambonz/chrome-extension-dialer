@@ -13,9 +13,13 @@ import SettingItem from "src/window/settings/settingItem";
 export function AccordionList({
   allSettings,
   reload,
+  onOpenForm,
+  isNewFormOpen,
 }: {
   allSettings: IAppSettings[];
   reload: () => void;
+  onOpenForm: () => void;
+  isNewFormOpen: boolean;
 }) {
   const { isOpen, onToggle } = useDisclosure();
   const [openAcc, setOpenAcc] = useState(0);
@@ -26,6 +30,8 @@ export function AccordionList({
   };
 
   function handleToggleAcc(accIndex: number) {
+    if (isNewFormOpen) return; //prevents opening form if for for new account is open
+    onOpenForm();
     setOpenAcc(accIndex);
     onToggle();
   }
@@ -34,6 +40,8 @@ export function AccordionList({
       {allSettings.map((data, index) => (
         <AccordionItem borderColor={"white"} key={index}>
           <AccordionButton
+            padding={0}
+            marginBottom={-1}
             _hover={{
               backgroundColor: "#fff",
               cursor: "default",
@@ -44,7 +52,7 @@ export function AccordionList({
               data={data}
             />
           </AccordionButton>
-          <AccordionPanel pb={4}>
+          <AccordionPanel pb={4} px={0}>
             <AccountForm
               formData={data}
               handleClose={closeFormInAccordion}

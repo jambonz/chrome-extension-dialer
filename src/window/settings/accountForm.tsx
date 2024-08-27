@@ -5,6 +5,7 @@ import {
   FormControl,
   FormLabel,
   HStack,
+  Image,
   Input,
   Text,
   useToast,
@@ -27,6 +28,8 @@ import {
 import { normalizeUrl } from "src/utils";
 import { getApplications } from "src/api";
 import { colors } from "src/theme";
+import Switch from "src/imgs/icons/Switch.svg";
+import Trash from "src/imgs/icons/Trash.svg";
 
 function AccountForm({
   closeForm,
@@ -146,8 +149,18 @@ function AccountForm({
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <VStack spacing={2} w="full" p={0}>
+    <form onSubmit={handleSubmit} className="formStyle">
+      <VStack
+        spacing={2}
+        w="full"
+        p={0}
+        border={"1px"}
+        borderColor={"gray.200"}
+        borderRadius={"6px"}
+        paddingY={"15px"}
+        paddingRight={"15px"}
+        paddingLeft={"10px"}
+      >
         <VStack spacing={2} w="full" p={0}>
           <FormControl id={`sip_display_name${inputUniqueId}`}>
             <FormLabel>SIP Display Name (Optional)</FormLabel>
@@ -239,7 +252,7 @@ function AccountForm({
                 {" "}
                 {showAdvanced ? "Hide" : "Show"} Advanced Settings
               </Text>
-              <FontAwesomeIcon color={colors.jambonz} icon={faSliders} />
+              <Image width={"15px"} height={"15px"} src={Switch} />
             </Button>
           </Center>
         </VStack>
@@ -270,6 +283,7 @@ function AccountForm({
             <Button
               textColor={"jambonz.500"}
               fontWeight={"semibold"}
+              borderRadius={"11px"}
               bg="jambonz.0"
               type="submit"
               w="full"
@@ -293,10 +307,11 @@ function AccountForm({
             }}
           >
             {formData && (
-              <FontAwesomeIcon
+              <Image
+                width={"24px"}
+                height={"24px"}
+                src={Trash}
                 onClick={() => handleDeleteSetting(formData.id)}
-                icon={faTrashCan}
-                color={colors.jambonz}
               />
             )}
           </HStack>

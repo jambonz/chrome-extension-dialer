@@ -157,10 +157,10 @@ function Footer({
 
   return (
     <HStack
-      paddingX={6}
-      mb={2}
+      padding={"15px"}
       justifyContent={"space-between"}
       alignItems={"center"}
+      bg={"grey.75"}
     >
       {isConfigured ? (
         <HStack alignItems={"center"} flexWrap={"nowrap"} className="xs">

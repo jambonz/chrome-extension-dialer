@@ -10,6 +10,7 @@ const MAX_NUM_OF_ACCOUNTS = 5;
 
 export const Settings = () => {
   const [showForm, setShowForm] = useState(false);
+  const [showFormInAccordion, setShowFormInAccordion] = useState(false);
   const [allSettings, setAllSettings] = useState<IAppSettings[]>([]);
 
   useEffect(
@@ -30,18 +31,30 @@ export const Settings = () => {
     setAllSettings(getSettings());
   };
 
+  const btnIsDisabled = allSettings.length >= MAX_NUM_OF_ACCOUNTS;
+
   return (
     <div>
       <Box>
-        <AccordionList allSettings={allSettings} reload={loadSettings} />
+        <AccordionList
+          onOpenForm={() => setShowFormInAccordion((prev) => !prev)}
+          allSettings={allSettings}
+          reload={loadSettings}
+          isNewFormOpen={showForm}
+        />
       </Box>
-      {!showForm && (
+      {!showForm && !showFormInAccordion && (
         <Button
-          marginY={"2.5"}
+          marginY={"3"}
           colorScheme="jambonz"
+          // bg={btnIsDisabled ? "jambonz.0" : "jambonz.500"}
+          // textColor={btnIsDisabled ? "jambonz.550" : "white"}
           w="full"
           onClick={handleOpenForm}
-          isDisabled={allSettings.length >= MAX_NUM_OF_ACCOUNTS}
+          isDisabled={btnIsDisabled}
+          // _hover={{
+          //   bg={btnIsDisabled ? "jambonz.0" : "jambonz.500"}
+          // }}
         >
           Add Account
         </Button>
@@ -57,9 +70,7 @@ export const Settings = () => {
         <Text>
           {allSettings.length} of {MAX_NUM_OF_ACCOUNTS}{" "}
         </Text>
-        {allSettings.length >= MAX_NUM_OF_ACCOUNTS && (
-          <Text>Limit has been reached</Text>
-        )}
+        {btnIsDisabled && <Text>Limit has been reached</Text>}
       </Center>
 
       {/* <Tabs isFitted colorScheme={DEFAULT_COLOR_SCHEME}>

@@ -17,8 +17,10 @@ function SettingItem({
       border={"1px"}
       borderColor={"gray.200"}
       justifyContent={"start"}
-      borderRadius={"2xl"}
-      padding={"2.5"}
+      borderRadius={"6px"}
+      paddingTop={"7px"}
+      paddingBottom={"5px"}
+      paddingX={"10px"}
       onClick={onToggleAcc}
       _hover={{
         backgroundColor: "gray.200",
