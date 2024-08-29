@@ -13,30 +13,44 @@ import SettingItem from "src/window/settings/settingItem";
 export function AccordionList({
   allSettings,
   reload,
-  onOpenForm,
+  handleOpenFormInAccordion,
+  handleCloseFormInAccordion,
   isNewFormOpen,
+  handleCloseNewForm,
 }: {
   allSettings: IAppSettings[];
   reload: () => void;
-  onOpenForm: () => void;
+  handleOpenFormInAccordion: () => void;
+  handleCloseFormInAccordion: () => void;
   isNewFormOpen: boolean;
+  handleCloseNewForm: () => void;
 }) {
-  const { isOpen, onToggle } = useDisclosure();
+  const { isOpen, onOpen, onClose } = useDisclosure();
   const [openAcc, setOpenAcc] = useState(0);
 
   const closeFormInAccordion = function () {
+    onClose();
+    handleCloseFormInAccordion();
     reload();
-    onToggle();
   };
 
   function handleToggleAcc(accIndex: number) {
-    if (isNewFormOpen) return; //prevents opening form if for for new account is open
-    onOpenForm();
+    if (isNewFormOpen) handleCloseNewForm(); //closes new form if open
+    handleOpenFormInAccordion();
     setOpenAcc(accIndex);
-    onToggle();
+    // onToggle();
+    onOpen();
   }
   return (
-    <Accordion index={isOpen ? [openAcc] : []} allowToggle>
+    <Accordion
+      index={isOpen ? [openAcc] : []}
+      allowToggle
+      sx={{
+        "& > *:last-child": {
+          marginBottom: "7px",
+        },
+      }}
+    >
       {allSettings.map((data, index) => (
         <AccordionItem borderColor={"white"} key={index}>
           <AccordionButton
@@ -47,10 +61,12 @@ export function AccordionList({
               cursor: "default",
             }}
           >
-            <SettingItem
-              onToggleAcc={() => handleToggleAcc(index)}
-              data={data}
-            />
+            {isOpen && index === openAcc ? null : (
+              <SettingItem
+                onToggleAcc={() => handleToggleAcc(index)}
+                data={data}
+              />
+            )}
           </AccordionButton>
           <AccordionPanel pb={4} px={0}>
             <AccountForm

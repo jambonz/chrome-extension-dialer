@@ -18,7 +18,6 @@ function AnimateOnShow({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: exit }}
       transition={{ duration: duration }}
-      className="test"
     >
       {children}
     </motion.div>

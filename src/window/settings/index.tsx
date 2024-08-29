@@ -26,6 +26,12 @@ export const Settings = () => {
   function handleCloseForm() {
     setShowForm(false);
   }
+  function handleOpenFormInAccordion() {
+    setShowFormInAccordion(true);
+  }
+  function handleCloseFormInAccordion() {
+    setShowFormInAccordion(false);
+  }
 
   const loadSettings = function () {
     setAllSettings(getSettings());
@@ -37,10 +43,12 @@ export const Settings = () => {
     <div>
       <Box>
         <AccordionList
-          onOpenForm={() => setShowFormInAccordion((prev) => !prev)}
+          handleOpenFormInAccordion={handleOpenFormInAccordion}
+          handleCloseFormInAccordion={handleCloseFormInAccordion}
           allSettings={allSettings}
           reload={loadSettings}
           isNewFormOpen={showForm}
+          handleCloseNewForm={handleCloseForm}
         />
       </Box>
       {!showForm && !showFormInAccordion && (

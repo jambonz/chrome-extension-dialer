@@ -1,18 +1,21 @@
 import { HStack, Text, VStack } from "@chakra-ui/react";
 import { faCheck } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React from "react";
+import React, { RefObject } from "react";
 import { IAppSettings } from "src/common/types";
 
 function AvailableAccounts({
   allSettings,
   onSetActive,
+  refData,
 }: {
   allSettings: IAppSettings[];
   onSetActive: (x: number) => void;
+  refData: RefObject<HTMLDivElement>;
 }) {
   return (
     <VStack
+      ref={refData}
       w={"full"}
       alignItems={"start"}
       bg={"grey.200"}

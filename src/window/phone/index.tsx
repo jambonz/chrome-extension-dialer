@@ -142,6 +142,7 @@ export const Phone = ({
   const unregisteredReasonRef = useRef("");
   const isInputNumberFocusRef = useRef(false);
   const secondsRef = useRef(seconds);
+  const accountsCardRef = useRef<HTMLDivElement | null>(null);
 
   const toast = useToast();
 
@@ -249,6 +250,18 @@ export const Phone = ({
       clearInterval(timer);
     };
   }, []);
+
+  useEffect(() => {
+    if (showAccounts) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showAccounts]);
 
   const fetchRegisterUser = () => {
     getSelfRegisteredUser(sipUsernameRef.current)
@@ -501,6 +514,12 @@ export const Phone = ({
     reload();
   };
 
+  const handleClickOutside = (event: Event) => {
+    const target = event.target as Node;
+    if (accountsCardRef.current && !accountsCardRef.current.contains(target)) {
+      setShowAccounts(false);
+    }
+  };
   return (
     <Box flexDirection="column">
       {allSettings.length >= 1 ? (
@@ -556,6 +575,7 @@ export const Phone = ({
             {showAccounts && (
               <AnimateOnShow initial={2} exit={0} duration={0.01}>
                 <AvailableAccounts
+                  refData={accountsCardRef}
                   allSettings={allSettings}
                   onSetActive={handleSetActive}
                 />
