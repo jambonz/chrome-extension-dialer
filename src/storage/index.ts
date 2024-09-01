@@ -42,22 +42,22 @@ export const saveSettings = (settings: AppSettings) => {
   if (str) {
     const parsed = JSON.parse(str);
 
-    const data: IAppSettings[] = parsed.map((el: saveSettingFormat) => {
-      return {
-        active: el.active,
-        decoded: JSON.parse(
-          Buffer.from(el.encoded, "base64").toString("utf-8")
-        ),
-        id: el.id,
-      };
-    });
+    // const data: IAppSettings[] = parsed.map((el: saveSettingFormat) => {
+    //   return {
+    //     active: el.active,
+    //     decoded: JSON.parse(
+    //       Buffer.from(el.encoded, "base64").toString("utf-8")
+    //     ),
+    //     id: el.id,
+    //   };
+    // });
 
-    const alreadyExists = data.filter(
-      (el) =>
-        el.decoded.sipDomain === settings.sipDomain &&
-        el.decoded.sipServerAddress === settings.sipServerAddress
-    );
-    if (!!alreadyExists.length) return;
+    // const alreadyExists = data.filter(
+    //   (el) =>
+    //     el.decoded.sipDomain === settings.sipDomain &&
+    //     el.decoded.sipServerAddress === settings.sipServerAddress
+    // );
+    // if (!!alreadyExists.length) return;
 
     localStorage.setItem(
       SETTINGS_KEY,

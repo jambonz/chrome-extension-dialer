@@ -15,6 +15,7 @@ function AvailableAccounts({
 }) {
   return (
     <VStack
+      zIndex={"modal"}
       ref={refData}
       w={"full"}
       alignItems={"start"}
