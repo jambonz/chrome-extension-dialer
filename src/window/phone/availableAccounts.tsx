@@ -1,4 +1,4 @@
-import { HStack, Text, VStack } from "@chakra-ui/react";
+import { Box, HStack, Text, VStack } from "@chakra-ui/react";
 import { faCheck } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import React, { RefObject } from "react";
@@ -30,16 +30,17 @@ function AvailableAccounts({
       {allSettings.map((el, i) => (
         <HStack
           key={i}
+          display={"flex"}
           justifyContent={"start"}
           _hover={{
             cursor: "pointer",
           }}
           onClick={() => onSetActive(el.id)}
         >
-          {el.active && <FontAwesomeIcon icon={faCheck} />}
-          <Text marginLeft={el.active ? "-0.5" : "5"}>
-            {el.decoded.sipDisplayName || el.decoded.sipUsername}
-          </Text>
+          <Box w={"12px"}>
+            {el.active ? <FontAwesomeIcon icon={faCheck} /> : null}
+          </Box>
+          <Text>{el.decoded.sipDisplayName || el.decoded.sipUsername}</Text>
           &nbsp;
           <Text>({`${el.decoded.sipUsername}@${el.decoded.sipDomain}`})</Text>
         </HStack>

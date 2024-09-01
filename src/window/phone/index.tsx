@@ -79,6 +79,9 @@ type PhoneProbs = {
   stat: [string, Dispatch<SetStateAction<SipClientStatus>>];
   allSettings: IAppSettings[];
   reload: () => void;
+  sipUA: React.MutableRefObject<SipUA | null>;
+  setIsSwitchingUserStatus: React.Dispatch<React.SetStateAction<boolean>>,
+  setIsOnline: React.Dispatch<React.SetStateAction<boolean>>
 };
 
 enum PAGE_VIEW {
@@ -102,6 +105,9 @@ export const Phone = ({
   advancedSettings,
   allSettings,
   reload,
+  sipUA,
+  setIsSwitchingUserStatus,
+  setIsOnline
 }: PhoneProbs) => {
   const [inputNumber, setInputNumber] = useState("");
   const [appName, setAppName] = useState("");
@@ -113,8 +119,8 @@ export const Phone = ({
   const [seconds, setSeconds] = useState(0);
   const [isCallButtonLoading, setIsCallButtonLoading] = useState(false);
   const [isAdvanceMode, setIsAdvancedMode] = useState(false);
-  const [isSwitchingUserStatus, setIsSwitchingUserStatus] = useState(true);
-  const [isOnline, setIsOnline] = useState(false);
+  // const [isSwitchingUserStatus, setIsSwitchingUserStatus] = useState(true);
+  // const [isOnline, setIsOnline] = useState(false);
   const [pageView, setPageView] = useState<PAGE_VIEW>(PAGE_VIEW.DIAL_PAD);
   const [registeredUser, setRegisteredUser] = useState<Partial<RegisteredUser>>(
     {
@@ -131,7 +137,7 @@ export const Phone = ({
 
   const inputNumberRef = useRef(inputNumber);
   const sessionDirectionRef = useRef(sessionDirection);
-  const sipUA = useRef<SipUA | null>(null);
+  // const sipUA = useRef<SipUA | null>(null);
   const timerRef = useRef<NodeJS.Timer | null>(null);
   const isRestartRef = useRef(false);
   const sipDomainRef = useRef("");
@@ -268,7 +274,7 @@ export const Phone = ({
       .then(({ json }) => {
         setRegisteredUser(json);
       })
-      .catch(() => {
+      .catch((err) => {
         setRegisteredUser({
           allow_direct_app_calling: false,
           allow_direct_queue_calling: false,
@@ -511,6 +517,7 @@ export const Phone = ({
   const handleSetActive = (id: number) => {
     setActiveSettings(id);
     setShowAccounts(false);
+    fetchRegisterUser();
     reload();
   };
 

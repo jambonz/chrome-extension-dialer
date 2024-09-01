@@ -15,6 +15,11 @@ function Footer({
   sipDomain,
   sipPassword,
   sipDisplayName,
+  isSwitchingUserStatus,
+  setIsSwitchingUserStatus,
+  isOnline,
+  setIsOnline,
+  sipUA,
 }: {
   status: string;
   setStatus: Dispatch<SetStateAction<SipClientStatus>>;
@@ -23,13 +28,15 @@ function Footer({
   sipDomain: string;
   sipPassword: string;
   sipDisplayName: string;
+  isSwitchingUserStatus: boolean;
+  setIsSwitchingUserStatus: React.Dispatch<React.SetStateAction<boolean>>;
+  isOnline: boolean;
+  setIsOnline: React.Dispatch<React.SetStateAction<boolean>>;
+  sipUA: React.MutableRefObject<SipUA | null>;
 }) {
   const [isConfigured, setIsConfigured] = useState(false);
 
-  const [isSwitchingUserStatus, setIsSwitchingUserStatus] = useState(false);
-  const [isOnline, setIsOnline] = useState(false);
-
-  const sipUA = useRef<SipUA | null>(null);
+  // const sipUA = useRef<SipUA | null>(null);
   const sipUsernameRef = useRef("");
   const sipPasswordRef = useRef("");
   const sipServerAddressRef = useRef("");

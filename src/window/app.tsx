@@ -10,12 +10,13 @@ import {
 import Phone from "./phone";
 import Settings from "./settings";
 import { DEFAULT_COLOR_SCHEME } from "src/common/constants";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getActiveSettings, getCallHistories, getSettings } from "src/storage";
 
 import CallHistories from "./history";
 import { CallHistory, IAppSettings, SipClientStatus } from "src/common/types";
 import Footer from "./footer/footer";
+import { SipUA } from "src/lib";
 
 export const WindowApp = () => {
   const [sipDomain, setSipDomain] = useState("");
@@ -32,6 +33,9 @@ export const WindowApp = () => {
   const [advancedSettings, setAdvancedSettings] = useState<IAppSettings | null>(
     null
   );
+  const sipUA = useRef<SipUA | null>(null);
+  const [isSwitchingUserStatus, setIsSwitchingUserStatus] = useState(false);
+  const [isOnline, setIsOnline] = useState(false);
 
   const loadSettings = () => {
     const settings = getSettings();
@@ -63,6 +67,9 @@ export const WindowApp = () => {
           advancedSettings={advancedSettings}
           allSettings={allSettings}
           reload={loadSettings}
+          sipUA={sipUA}
+          setIsSwitchingUserStatus={setIsSwitchingUserStatus}
+          setIsOnline={setIsOnline}
         />
       ),
     },
@@ -133,6 +140,11 @@ export const WindowApp = () => {
         sipPassword={sipPassword}
         status={status}
         setStatus={setStatus}
+        isSwitchingUserStatus={isSwitchingUserStatus}
+        setIsSwitchingUserStatus={setIsSwitchingUserStatus}
+        isOnline={isOnline}
+        setIsOnline={setIsOnline}
+        sipUA={sipUA}
       />
     </Grid>
   );
