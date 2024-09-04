@@ -18,18 +18,13 @@ import PasswordInput from "src/components/password-input";
 import { deleteSettings, editSettings, saveSettings } from "src/storage";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
-  faCheckCircle,
-  faCircleXmark,
-  faShuffle,
-  faSliders,
-  faSlidersH,
-  faTrashCan,
+  faCheckCircle
 } from "@fortawesome/free-solid-svg-icons";
 import { normalizeUrl } from "src/utils";
-import { getApplications } from "src/api";
-import { colors } from "src/theme";
+import { getAdvancedValidation } from "src/api";
 import Switch from "src/imgs/icons/Switch.svg";
 import Trash from "src/imgs/icons/Trash.svg";
+import invalid from "src/imgs/icons/invalid.svg";
 
 function AccountForm({
   closeForm,
@@ -68,13 +63,26 @@ function AccountForm({
         setAccountSid(formData.decoded.accountSid);
         setApiKey(formData.decoded.apiKey || "");
         setApiServer(formData.decoded.apiServer);
+
+        if (
+          formData.decoded.accountSid ||
+          formData.decoded.apiKey ||
+          formData.decoded.apiServer
+        ) {
+          setIsAdvancedMode(true);
+          checkCredential(
+            formData.decoded.apiServer || "",
+            formData.decoded.accountSid || ""
+          );
+        }
       }
     },
     [formData, handleClose]
   );
 
-  const checkCredential = () => {
-    getApplications()
+  const checkCredential = (apiServer: string, accountSid: string) => {
+    // getApplications()
+    getAdvancedValidation(apiServer, accountSid)
       .then(() => {
         setIsCredentialOk(true);
       })
@@ -101,7 +109,7 @@ function AccountForm({
 
     if (showAdvanced) {
       setIsAdvancedMode(true);
-      checkCredential();
+      checkCredential(settings.apiServer || "", settings.accountSid || "");
     }
 
     toast({
@@ -239,6 +247,42 @@ function AccountForm({
                   isRequired
                 />
               </FormControl>
+
+              {isAdvancedMode && (
+                <HStack
+                  w="full"
+                  mt={2}
+                  mb={2}
+                  gap={"1.5"}
+                  alignItems={"center"}
+                >
+                  <Text
+                    fontSize="12px"
+                    fontWeight={600}
+                    color={isCredentialOk ? "greenish.500" : "jambonz.450"}
+                  >
+                    {isCredentialOk
+                      ? "Credentials are valid"
+                      : "We cant verify your credentials"}
+                  </Text>
+                  {isCredentialOk ? (
+                    <Box
+                      as={FontAwesomeIcon}
+                      icon={faCheckCircle}
+                      color={"greenish.500"}
+                    />
+                  ) : (
+                    <Box w={"22px"} h={"22px"} p={0} marginLeft={-1}>
+                      <Image
+                        width={"full"}
+                        height={"full"}
+                        p={0}
+                        src={invalid}
+                      />
+                    </Box>
+                  )}
+                </HStack>
+              )}
             </VStack>
           )}
           <Center flexDirection={"column"} gap={"2.5"}>
@@ -256,22 +300,6 @@ function AccountForm({
             </Button>
           </Center>
         </VStack>
-
-        {isAdvancedMode && (
-          <HStack w="full" mt={2} mb={2}>
-            <Box
-              as={FontAwesomeIcon}
-              icon={isCredentialOk ? faCheckCircle : faCircleXmark}
-              color={isCredentialOk ? "green.500" : "red.500"}
-            />
-            <Text
-              fontSize="14px"
-              color={isCredentialOk ? "green.500" : "red.500"}
-            >
-              Credential is {isCredentialOk ? "valid" : "invalid"}
-            </Text>
-          </HStack>
-        )}
 
         <HStack
           w="full"

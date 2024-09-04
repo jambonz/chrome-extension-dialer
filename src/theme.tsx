@@ -13,6 +13,7 @@ const mainTheme = extendTheme({
       200: "#fc839d",
       300: "#fa5575",
       400: "#f8274e",
+      450: "#BD4782",
       500: "#BB225B",
       550: "#DA1C5C",
       600: "#c60921",
@@ -32,6 +33,9 @@ const mainTheme = extendTheme({
       700: "#969696",
       800: "#6D6D6D",
       900: "#434343",
+    },
+    greenish: {
+      500: "#158477",
     },
     blue: {
       600: "#4492FF", //for toggle icon

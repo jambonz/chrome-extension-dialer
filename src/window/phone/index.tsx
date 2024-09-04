@@ -80,8 +80,8 @@ type PhoneProbs = {
   allSettings: IAppSettings[];
   reload: () => void;
   sipUA: React.MutableRefObject<SipUA | null>;
-  setIsSwitchingUserStatus: React.Dispatch<React.SetStateAction<boolean>>,
-  setIsOnline: React.Dispatch<React.SetStateAction<boolean>>
+  setIsSwitchingUserStatus: React.Dispatch<React.SetStateAction<boolean>>;
+  setIsOnline: React.Dispatch<React.SetStateAction<boolean>>;
 };
 
 enum PAGE_VIEW {
@@ -105,9 +105,9 @@ export const Phone = ({
   advancedSettings,
   allSettings,
   reload,
-  sipUA,
+  // sipUA,
   setIsSwitchingUserStatus,
-  setIsOnline
+  setIsOnline,
 }: PhoneProbs) => {
   const [inputNumber, setInputNumber] = useState("");
   const [appName, setAppName] = useState("");
@@ -137,7 +137,7 @@ export const Phone = ({
 
   const inputNumberRef = useRef(inputNumber);
   const sessionDirectionRef = useRef(sessionDirection);
-  // const sipUA = useRef<SipUA | null>(null);
+  const sipUA = useRef<SipUA | null>(null);
   const timerRef = useRef<NodeJS.Timer | null>(null);
   const isRestartRef = useRef(false);
   const sipDomainRef = useRef("");
@@ -517,7 +517,7 @@ export const Phone = ({
   const handleSetActive = (id: number) => {
     setActiveSettings(id);
     setShowAccounts(false);
-    fetchRegisterUser();
+    // fetchRegisterUser();
     reload();
   };
 

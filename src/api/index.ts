@@ -143,6 +143,16 @@ export const getApplications = () => {
   );
 };
 
+// validate user advanced credential
+export const getAdvancedValidation = (
+  apiServer: string,
+  accountSid: string
+) => {
+  return getFetch<Application[]>(
+    `${apiServer}/Accounts/${accountSid}/Applications`
+  );
+};
+
 export const getQueues = () => {
   const advancedSettings = getActiveSettings();
   return getFetch<Queue[]>(
