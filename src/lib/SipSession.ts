@@ -67,7 +67,7 @@ export default class SipSession extends events.EventEmitter {
       ({ response }: { response: IncomingResponse }) => {
         this.emit(SipConstants.SESSION_ANSWERED, {
           status: SipConstants.SESSION_ANSWERED,
-          callSid: response.hasHeader("X-Call-Sid")
+          callSid: response?.hasHeader("X-Call-Sid")
             ? response.getHeader("X-Call-Sid")
             : null,
         });
