@@ -38,7 +38,6 @@ export function AccordionList({
     if (isNewFormOpen) handleCloseNewForm(); //closes new form if open
     handleOpenFormInAccordion();
     setOpenAcc(accIndex);
-    // onToggle();
     onOpen();
   }
   return (

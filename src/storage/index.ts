@@ -42,34 +42,24 @@ export const saveSettings = (settings: AppSettings) => {
   if (str) {
     const parsed = JSON.parse(str);
 
-    // const data: IAppSettings[] = parsed.map((el: saveSettingFormat) => {
-    //   return {
-    //     active: el.active,
-    //     decoded: JSON.parse(
-    //       Buffer.from(el.encoded, "base64").toString("utf-8")
-    //     ),
-    //     id: el.id,
-    //   };
-    // });
-
-    // const alreadyExists = data.filter(
-    //   (el) =>
-    //     el.decoded.sipDomain === settings.sipDomain &&
-    //     el.decoded.sipServerAddress === settings.sipServerAddress
-    // );
-    // if (!!alreadyExists.length) return;
-
-    localStorage.setItem(
-      SETTINGS_KEY,
-      JSON.stringify([
-        ...parsed,
-        {
-          encoded,
-          active: false,
-          id: parsed.length + 1,
-        },
-      ])
-    );
+    if (parsed.length < 1) {
+      localStorage.setItem(
+        SETTINGS_KEY,
+        JSON.stringify([{ id: 1, encoded, active: true }])
+      );
+    } else {
+      localStorage.setItem(
+        SETTINGS_KEY,
+        JSON.stringify([
+          ...parsed,
+          {
+            encoded,
+            active: false,
+            id: parsed.length + 1,
+          },
+        ])
+      );
+    }
   } else {
     localStorage.setItem(
       SETTINGS_KEY,
@@ -153,10 +143,7 @@ export const getSettings = (): IAppSettings[] => {
       };
     });
     return decoded;
-    // const planText = Buffer.from(str, "base64").toString("utf-8");
-    // return JSON.parse(planText) as AppSettings;
   }
-  // return {} as AppSettings;
   return [] as IAppSettings[];
 };
 
@@ -175,10 +162,7 @@ export const getActiveSettings = (): IAppSettings => {
       };
     });
     return decoded.find((el) => el.active) as IAppSettings;
-    // const planText = Buffer.from(str, "base64").toString("utf-8");
-    // return JSON.parse(planText) as AppSettings;
   }
-  // return {} as AppSettings;
   return {} as IAppSettings;
 };
 
@@ -227,12 +211,8 @@ export const getAdvancedSettings = (): IAdvancedAppSettings[] => {
       };
     });
     return decoded;
-    // const planText = Buffer.from(str, "base64").toString("utf-8");
-    // return JSON.parse(planText) as AppSettings;
   }
-  // return {} as AppSettings;
   return [] as IAdvancedAppSettings[];
-  // return [] as IAppSettings[];
 };
 export const getActiveAdvancedSettings = (): IAdvancedAppSettings => {
   const str = localStorage.getItem(ADVANCED_SETTINGS_KET);
@@ -250,16 +230,11 @@ export const getActiveAdvancedSettings = (): IAdvancedAppSettings => {
       };
     });
     return decoded.find((el) => el.active) as IAdvancedAppSettings;
-    // const planText = Buffer.from(str, "base64").toString("utf-8");
-    // return JSON.parse(planText) as AppSettings;
   }
-  // return {} as AppSettings;
   return {} as IAdvancedAppSettings;
-  // return [] as IAppSettings[];
 };
 
 // Call History
-
 const historyKey = "History";
 const MAX_HISTORY_COUNT = 20;
 export const saveCallHistory = (username: string, call: CallHistory) => {

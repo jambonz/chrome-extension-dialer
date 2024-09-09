@@ -17,9 +17,7 @@ import { AppSettings, IAppSettings } from "src/common/types";
 import PasswordInput from "src/components/password-input";
 import { deleteSettings, editSettings, saveSettings } from "src/storage";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import {
-  faCheckCircle
-} from "@fortawesome/free-solid-svg-icons";
+import { faCheckCircle } from "@fortawesome/free-solid-svg-icons";
 import { normalizeUrl } from "src/utils";
 import { getAdvancedValidation } from "src/api";
 import Switch from "src/imgs/icons/Switch.svg";
@@ -81,7 +79,6 @@ function AccountForm({
   );
 
   const checkCredential = (apiServer: string, accountSid: string) => {
-    // getApplications()
     getAdvancedValidation(apiServer, accountSid)
       .then(() => {
         setIsCredentialOk(true);

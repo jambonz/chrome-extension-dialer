@@ -16,7 +16,6 @@ import { getActiveSettings, getCallHistories, getSettings } from "src/storage";
 import CallHistories from "./history";
 import { CallHistory, IAppSettings, SipClientStatus } from "src/common/types";
 import Footer from "./footer/footer";
-import { SipUA } from "src/lib";
 
 export const WindowApp = () => {
   const [sipDomain, setSipDomain] = useState("");
@@ -33,9 +32,24 @@ export const WindowApp = () => {
   const [advancedSettings, setAdvancedSettings] = useState<IAppSettings | null>(
     null
   );
-  const sipUA = useRef<SipUA | null>(null);
   const [isSwitchingUserStatus, setIsSwitchingUserStatus] = useState(false);
   const [isOnline, setIsOnline] = useState(false);
+  const phoneSipAschildRef = useRef<{
+    updateGoOffline: (x: string) => void;
+  } | null>(null);
+
+  const handleGoOffline = (s: SipClientStatus) => {
+    if (phoneSipAschildRef.current) {
+      if (s === status) {
+        return;
+      }
+      if (s === "unregistered") {
+        phoneSipAschildRef.current.updateGoOffline("stop");
+      } else {
+        phoneSipAschildRef.current.updateGoOffline("start");
+      }
+    }
+  };
 
   const loadSettings = () => {
     const settings = getSettings();
@@ -56,6 +70,7 @@ export const WindowApp = () => {
       title: "Dialer",
       content: (
         <Phone
+          ref={phoneSipAschildRef}
           sipUsername={sipUsername}
           sipPassword={sipPassword}
           sipDomain={sipDomain}
@@ -67,7 +82,6 @@ export const WindowApp = () => {
           advancedSettings={advancedSettings}
           allSettings={allSettings}
           reload={loadSettings}
-          sipUA={sipUA}
           setIsSwitchingUserStatus={setIsSwitchingUserStatus}
           setIsOnline={setIsOnline}
         />
@@ -144,7 +158,7 @@ export const WindowApp = () => {
         setIsSwitchingUserStatus={setIsSwitchingUserStatus}
         isOnline={isOnline}
         setIsOnline={setIsOnline}
-        sipUA={sipUA}
+        onHandleGoOffline={handleGoOffline}
       />
     </Grid>
   );

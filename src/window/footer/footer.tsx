@@ -1,9 +1,7 @@
-import { HStack, Image, Text, useToast } from "@chakra-ui/react";
+import { HStack, Image, Text } from "@chakra-ui/react";
 import jambonz from "src/imgs/jambonz.svg";
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from "react";
+import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { SipClientStatus } from "src/common/types";
-import { SipConstants, SipUA } from "src/lib";
-import { DEFAULT_TOAST_DURATION } from "src/common/constants";
 import JambonzSwitch from "src/components/switch";
 import "./styles.scss";
 
@@ -19,7 +17,7 @@ function Footer({
   setIsSwitchingUserStatus,
   isOnline,
   setIsOnline,
-  sipUA,
+  onHandleGoOffline,
 }: {
   status: string;
   setStatus: Dispatch<SetStateAction<SipClientStatus>>;
@@ -32,135 +30,24 @@ function Footer({
   setIsSwitchingUserStatus: React.Dispatch<React.SetStateAction<boolean>>;
   isOnline: boolean;
   setIsOnline: React.Dispatch<React.SetStateAction<boolean>>;
-  sipUA: React.MutableRefObject<SipUA | null>;
+  onHandleGoOffline: (s: SipClientStatus) => void;
 }) {
   const [isConfigured, setIsConfigured] = useState(false);
-
-  // const sipUA = useRef<SipUA | null>(null);
-  const sipUsernameRef = useRef("");
-  const sipPasswordRef = useRef("");
-  const sipServerAddressRef = useRef("");
-  const sipDomainRef = useRef("");
-  const sipDisplayNameRef = useRef("");
-  const unregisteredReasonRef = useRef("");
-  const isRestartRef = useRef(false);
-
-  const toast = useToast();
 
   useEffect(() => {
     if (status === "registered" || status === "disconnected") {
       setIsSwitchingUserStatus(false);
       setIsOnline(status === "registered");
     }
-  }, [status]);
+  }, [status, setIsSwitchingUserStatus, setIsOnline]);
 
   useEffect(() => {
-    sipDomainRef.current = sipDomain;
-    sipUsernameRef.current = sipUsername;
-    sipPasswordRef.current = sipPassword;
-    sipServerAddressRef.current = sipServerAddress;
-    sipDisplayNameRef.current = sipDisplayName;
     if (sipDomain && sipUsername && sipPassword && sipServerAddress) {
-      if (sipUA.current) {
-        if (sipUA.current.isConnected()) {
-          clientGoOffline();
-          isRestartRef.current = true;
-        } else {
-          createSipClient();
-        }
-      } else {
-        createSipClient();
-      }
       setIsConfigured(true);
     } else {
       setIsConfigured(false);
-      clientGoOffline();
     }
-  }, [sipDomain, sipUsername, sipPassword, sipServerAddress, sipDisplayName]);
-
-  const clientGoOffline = () => {
-    if (sipUA.current) {
-      sipUA.current.stop();
-      sipUA.current = null;
-    }
-  };
-
-  const handleGoOffline = (s: SipClientStatus) => {
-    if (s === status) {
-      return;
-    }
-    if (s === "unregistered") {
-      if (sipUA.current) {
-        sipUA.current.stop();
-      }
-    } else {
-      if (sipUA.current) {
-        sipUA.current.start();
-      }
-    }
-  };
-
-  const createSipClient = () => {
-    setIsSwitchingUserStatus(true);
-    const client = {
-      username: `${sipUsernameRef.current}@${sipDomainRef.current}`,
-      password: sipPasswordRef.current,
-      name: sipDisplayNameRef.current ?? sipUsernameRef.current,
-    };
-
-    const settings = {
-      pcConfig: {
-        iceServers: [{ urls: ["stun:stun.l.google.com:19302"] }],
-      },
-      wsUri: sipServerAddressRef.current,
-      register: true,
-    };
-
-    const sipClient = new SipUA(client, settings);
-
-    // UA Status
-    sipClient.on(SipConstants.UA_REGISTERED, (args) => {
-      setStatus("registered");
-    });
-    sipClient.on(SipConstants.UA_UNREGISTERED, (args) => {
-      setStatus("unregistered");
-      if (sipUA.current) {
-        sipUA.current.stop();
-      }
-      unregisteredReasonRef.current = `User is not registered${
-        args.cause ? `, ${args.cause}` : ""
-      }`;
-    });
-
-    sipClient.on(SipConstants.UA_DISCONNECTED, (args) => {
-      if (unregisteredReasonRef.current) {
-        toast({
-          title: unregisteredReasonRef.current,
-          status: "warning",
-          duration: DEFAULT_TOAST_DURATION,
-          isClosable: true,
-        });
-        unregisteredReasonRef.current = "";
-      }
-      setStatus("disconnected");
-      if (isRestartRef.current) {
-        createSipClient();
-        isRestartRef.current = false;
-      }
-
-      if (args.error) {
-        toast({
-          title: `Cannot connect to ${sipServerAddress}, ${args.reason}`,
-          status: "warning",
-          duration: DEFAULT_TOAST_DURATION,
-          isClosable: true,
-        });
-      }
-    });
-
-    sipClient.start();
-    sipUA.current = sipClient;
-  };
+  }, [sipDomain, sipUsername, sipPassword, sipServerAddress]);
 
   return (
     <HStack
@@ -176,7 +63,7 @@ function Footer({
             checked={[isOnline, setIsOnline]}
             onChange={(v) => {
               setIsSwitchingUserStatus(true);
-              handleGoOffline(v ? "registered" : "unregistered");
+              onHandleGoOffline(v ? "registered" : "unregistered");
             }}
           />
           <Text>You are {isOnline ? "online" : "offline"}</Text>

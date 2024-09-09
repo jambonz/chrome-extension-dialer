@@ -55,14 +55,9 @@ export const Settings = () => {
         <Button
           marginY={"3"}
           colorScheme="jambonz"
-          // bg={btnIsDisabled ? "jambonz.0" : "jambonz.500"}
-          // textColor={btnIsDisabled ? "jambonz.550" : "white"}
           w="full"
           onClick={handleOpenForm}
           isDisabled={btnIsDisabled}
-          // _hover={{
-          //   bg={btnIsDisabled ? "jambonz.0" : "jambonz.500"}
-          // }}
         >
           Add Account
         </Button>
