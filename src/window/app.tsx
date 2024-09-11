@@ -39,10 +39,10 @@ export const WindowApp = () => {
   } | null>(null);
 
   const handleGoOffline = (s: SipClientStatus) => {
+    if (s === status) {
+      return;
+    }
     if (phoneSipAschildRef.current) {
-      if (s === status) {
-        return;
-      }
       if (s === "unregistered") {
         phoneSipAschildRef.current.updateGoOffline("stop");
       } else {

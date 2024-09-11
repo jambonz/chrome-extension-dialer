@@ -17,6 +17,7 @@ import {
   Dispatch,
   forwardRef,
   SetStateAction,
+  useCallback,
   useEffect,
   useImperativeHandle,
   useRef,
@@ -159,167 +160,46 @@ export const Phone = forwardRef(
 
     useImperativeHandle(ref, () => ({
       updateGoOffline(newState: string) {
-        if (newState === "start") {
-          sipUA.current?.start();
-        } else {
+        if (newState === "stop") {
           sipUA.current?.stop();
+        } else {
+          sipUA.current?.start();
         }
       },
     }));
 
-    useEffect(() => {
-      sipDomainRef.current = sipDomain;
-      sipUsernameRef.current = sipUsername;
-      sipPasswordRef.current = sipPassword;
-      sipServerAddressRef.current = sipServerAddress;
-      sipDisplayNameRef.current = sipDisplayName;
-      if (sipDomain && sipUsername && sipPassword && sipServerAddress) {
-        if (sipUA.current) {
-          if (sipUA.current.isConnected()) {
-            clientGoOffline();
-            isRestartRef.current = true;
-          } else {
-            createSipClient();
-          }
-        } else {
-          createSipClient();
-        }
-        setIsConfigured(true);
-      } else {
-        setIsConfigured(false);
-        clientGoOffline();
-      }
-      fetchRegisterUser();
-      getConferences()
-        ?.then(() => {
-          setShowConference(true);
-        })
-        .catch(() => {
-          setShowConference(false);
+    const addCallHistory = useCallback(() => {
+      const call = getCurrentCall();
+      if (call) {
+        saveCallHistory(sipUsername, {
+          number: call.number,
+          direction: call.direction,
+          duration: transform(Date.now(), call.timeStamp),
+          timeStamp: call.timeStamp,
+          callSid: call.callSid,
+          name: call.name,
         });
-    }, [sipDomain, sipUsername, sipPassword, sipServerAddress, sipDisplayName]);
-
-    useEffect(() => {
-      setIsAdvancedMode(!!advancedSettings?.decoded?.accountSid);
-      fetchRegisterUser();
-    }, [advancedSettings]);
-
-    useEffect(() => {
-      inputNumberRef.current = inputNumber;
-      sessionDirectionRef.current = sessionDirection;
-      secondsRef.current = seconds;
-    }, [inputNumber, seconds, sessionDirection]);
-
-    useEffect(() => {
-      if (isSipClientIdle(callStatus) && isCallButtonLoading) {
-        setIsCallButtonLoading(false);
       }
-      switch (callStatus) {
-        case SipConstants.SESSION_RINGING:
-          if (sessionDirection === "incoming") {
-            setPageView(PAGE_VIEW.INCOMING_CALL);
-          } else {
-            setPageView(PAGE_VIEW.OUTGOING_CALL);
-          }
-          break;
-        case SipConstants.SESSION_ANSWERED:
-          if (!!selectedConference) {
-            setPageView(PAGE_VIEW.JOIN_CONFERENCE);
-          } else {
-            setPageView(PAGE_VIEW.DIAL_PAD);
-          }
-          break;
-        case SipConstants.SESSION_ENDED:
-        case SipConstants.SESSION_FAILED:
-          setSelectedConference("");
-          setPageView(PAGE_VIEW.DIAL_PAD);
-          break;
-      }
-    }, [callStatus]);
+      deleteCurrentCall();
+    }, [sipUsername]);
 
-    useEffect(() => {
-      if (calledANumber) {
-        if (
-          !(
-            calledANumber.startsWith("app-") ||
-            calledANumber.startsWith("queue-") ||
-            calledANumber.startsWith("conference-")
-          )
-        ) {
-          setInputNumber(calledANumber);
-        }
-
-        setAppName(calledAName);
-        makeOutboundCall(calledANumber, calledAName);
-        setCalledANumber("");
-        setCalledAName("");
-      }
-    }, [calledANumber]);
-
-    useEffect(() => {
-      if (status === "registered" || status === "disconnected") {
-        setIsSwitchingUserStatus(false);
-        setIsOnline(status === "registered");
-      }
-    }, [status]);
-
-    useEffect(() => {
-      const timer = setInterval(() => {
-        fetchRegisterUser();
-      }, 10000);
-      return () => {
-        clearInterval(timer);
-      };
-    }, []);
-
-    useEffect(() => {
-      if (showAccounts) {
-        document.addEventListener("mousedown", handleClickOutside);
-      } else {
-        document.removeEventListener("mousedown", handleClickOutside);
-      }
-
-      return () => {
-        document.removeEventListener("mousedown", handleClickOutside);
-      };
-    }, [showAccounts]);
-
-    const fetchRegisterUser = () => {
-      getSelfRegisteredUser(sipUsernameRef.current)
-        .then(({ json }) => {
-          setRegisteredUser(json);
-        })
-        .catch((err) => {
-          setRegisteredUser({
-            allow_direct_app_calling: false,
-            allow_direct_queue_calling: false,
-            allow_direct_user_calling: false,
-          });
-        });
-    };
-
-    const startCallDurationCounter = () => {
+    const startCallDurationCounter = useCallback(() => {
       stopCallDurationCounter();
       timerRef.current = setInterval(() => {
         setSeconds((seconds) => seconds + 1);
       }, 1000);
-    };
+    }, []);
 
-    const stopCallDurationCounter = () => {
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-        timerRef.current = null;
-        setSeconds(0);
-      }
-    };
-
-    const createSipClient = () => {
+    const createSipClient = useCallback(() => {
       setIsSwitchingUserStatus(true);
       const client = {
         username: `${sipUsernameRef.current}@${sipDomainRef.current}`,
         password: sipPasswordRef.current,
         name: sipDisplayNameRef.current ?? sipUsernameRef.current,
       };
+      console.log("client value upon creating sip client", client);
+      console.log("zaz", sipServerAddressRef.current);
+      console.log("aza", sipServerAddress);
 
       const settings = {
         pcConfig: {
@@ -362,12 +242,17 @@ export const Phone = forwardRef(
         }
 
         if (args.error) {
+          console.log("sipserveraddress:", sipServerAddress);
           toast({
-            title: `Cannot connect to ${sipServerAddress}, ${args.reason}`,
+            title: `Cannot connect to ${sipServerAddressRef.current}, ${args.reason}`,
             status: "warning",
             duration: DEFAULT_TOAST_DURATION,
             isClosable: true,
           });
+          if (sipUA.current) {
+            sipUA.current.stop();
+          }
+          // isRestartRef.current = true;
         }
       });
       // Call Status
@@ -410,22 +295,160 @@ export const Phone = forwardRef(
 
       sipClient.start();
       sipUA.current = sipClient;
+    }, [
+      addCallHistory,
+      setIsSwitchingUserStatus,
+      setStatus,
+      sipServerAddress,
+      startCallDurationCounter,
+      toast,
+    ]);
+
+    useEffect(() => {
+      sipDomainRef.current = sipDomain;
+      sipUsernameRef.current = sipUsername;
+      sipPasswordRef.current = sipPassword;
+      sipServerAddressRef.current = sipServerAddress;
+      sipDisplayNameRef.current = sipDisplayName;
+      if (sipDomain && sipUsername && sipPassword && sipServerAddress) {
+        if (sipUA.current) {
+          if (sipUA.current.isConnected()) {
+            clientGoOffline();
+            isRestartRef.current = true;
+          } else {
+            createSipClient();
+          }
+        } else {
+          createSipClient();
+        }
+        setIsConfigured(true);
+      } else {
+        setIsConfigured(false);
+        clientGoOffline();
+      }
+      fetchRegisterUser();
+      getConferences()
+        ?.then(() => {
+          setShowConference(true);
+        })
+        .catch(() => {
+          setShowConference(false);
+        });
+    }, [
+      sipDomain,
+      sipUsername,
+      sipPassword,
+      sipServerAddress,
+      sipDisplayName,
+      createSipClient,
+    ]);
+
+    useEffect(() => {
+      setIsAdvancedMode(!!advancedSettings?.decoded?.accountSid);
+      fetchRegisterUser();
+    }, [advancedSettings]);
+
+    useEffect(() => {
+      inputNumberRef.current = inputNumber;
+      sessionDirectionRef.current = sessionDirection;
+      secondsRef.current = seconds;
+    }, [inputNumber, seconds, sessionDirection]);
+
+    useEffect(() => {
+      if (isSipClientIdle(callStatus) && isCallButtonLoading) {
+        setIsCallButtonLoading(false);
+      }
+      switch (callStatus) {
+        case SipConstants.SESSION_RINGING:
+          if (sessionDirection === "incoming") {
+            setPageView(PAGE_VIEW.INCOMING_CALL);
+          } else {
+            setPageView(PAGE_VIEW.OUTGOING_CALL);
+          }
+          break;
+        case SipConstants.SESSION_ANSWERED:
+          if (!!selectedConference) {
+            setPageView(PAGE_VIEW.JOIN_CONFERENCE);
+          } else {
+            setPageView(PAGE_VIEW.DIAL_PAD);
+          }
+          break;
+        case SipConstants.SESSION_ENDED:
+        case SipConstants.SESSION_FAILED:
+          setSelectedConference("");
+          setPageView(PAGE_VIEW.DIAL_PAD);
+          break;
+      }
+    }, [callStatus, isCallButtonLoading, selectedConference, sessionDirection]);
+
+    useEffect(() => {
+      if (calledANumber) {
+        if (
+          !(
+            calledANumber.startsWith("app-") ||
+            calledANumber.startsWith("queue-") ||
+            calledANumber.startsWith("conference-")
+          )
+        ) {
+          setInputNumber(calledANumber);
+        }
+
+        setAppName(calledAName);
+        makeOutboundCall(calledANumber, calledAName);
+        setCalledANumber("");
+        setCalledAName("");
+      }
+    }, [calledANumber, calledAName, setCalledAName, setCalledANumber]);
+
+    useEffect(() => {
+      if (status === "registered" || status === "disconnected") {
+        setIsSwitchingUserStatus(false);
+        setIsOnline(status === "registered");
+      }
+    }, [status, setIsOnline, setIsSwitchingUserStatus]);
+
+    useEffect(() => {
+      const timer = setInterval(() => {
+        fetchRegisterUser();
+      }, 10000);
+      return () => {
+        clearInterval(timer);
+      };
+    }, []);
+
+    useEffect(() => {
+      if (showAccounts) {
+        document.addEventListener("mousedown", handleClickOutside);
+      } else {
+        document.removeEventListener("mousedown", handleClickOutside);
+      }
+
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+    }, [showAccounts]);
+
+    const fetchRegisterUser = () => {
+      getSelfRegisteredUser(sipUsernameRef.current)
+        .then(({ json }) => {
+          setRegisteredUser(json);
+        })
+        .catch((err) => {
+          setRegisteredUser({
+            allow_direct_app_calling: false,
+            allow_direct_queue_calling: false,
+            allow_direct_user_calling: false,
+          });
+        });
     };
 
-    const addCallHistory = () => {
-      const call = getCurrentCall();
-      if (call) {
-        saveCallHistory(sipUsername, {
-          number: call.number,
-          direction: call.direction,
-          duration: transform(Date.now(), call.timeStamp),
-          timeStamp: call.timeStamp,
-          callSid: call.callSid,
-          name: call.name,
-        });
+    function stopCallDurationCounter() {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = null;
+        setSeconds(0);
       }
-      deleteCurrentCall();
-    };
+    }
 
     function transform(t1: number, t2: number) {
       const diff = Math.abs(t1 - t2) / 1000; // Get the difference in seconds
@@ -532,7 +555,9 @@ export const Phone = forwardRef(
     const handleSetActive = (id: number) => {
       setActiveSettings(id);
       setShowAccounts(false);
+      // fetchRegisterUser();
       reload();
+      // window.location.reload();
     };
 
     const handleClickOutside = (event: Event) => {
