@@ -197,9 +197,6 @@ export const Phone = forwardRef(
         password: sipPasswordRef.current,
         name: sipDisplayNameRef.current ?? sipUsernameRef.current,
       };
-      console.log("client value upon creating sip client", client);
-      console.log("zaz", sipServerAddressRef.current);
-      console.log("aza", sipServerAddress);
 
       const settings = {
         pcConfig: {
@@ -242,7 +239,6 @@ export const Phone = forwardRef(
         }
 
         if (args.error) {
-          console.log("sipserveraddress:", sipServerAddress);
           toast({
             title: `Cannot connect to ${sipServerAddressRef.current}, ${args.reason}`,
             status: "warning",
