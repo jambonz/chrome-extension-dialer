@@ -233,22 +233,24 @@ export const Phone = forwardRef(
           unregisteredReasonRef.current = "";
         }
         setStatus("disconnected");
-        if (isRestartRef.current) {
-          createSipClient();
-          isRestartRef.current = false;
+        setIsOnline(false);
+        setIsSwitchingUserStatus(false);
+        if (sipUA.current) {
+          sipUA.current.stop();
         }
 
         if (args.error) {
           toast({
-            title: `Cannot connect to ${sipServerAddressRef.current}, ${args.reason}`,
+            title: `Cannot connect to ${sipServerAddressRef.current}${
+              args.reason ? `, ${args.reason}` : ""
+            }`,
             status: "warning",
             duration: DEFAULT_TOAST_DURATION,
             isClosable: true,
           });
-          if (sipUA.current) {
-            sipUA.current.stop();
-          }
-          // isRestartRef.current = true;
+        } else if (isRestartRef.current) {
+          createSipClient();
+          isRestartRef.current = false;
         }
       });
       // Call Status
@@ -295,9 +297,9 @@ export const Phone = forwardRef(
       addCallHistory,
       setIsSwitchingUserStatus,
       setStatus,
-      sipServerAddress,
       startCallDurationCounter,
       toast,
+      setIsOnline
     ]);
 
     useEffect(() => {
