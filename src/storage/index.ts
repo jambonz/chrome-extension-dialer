@@ -3,6 +3,8 @@ import {
   AppSettings,
   CallHistory,
   ConferenceSettings,
+  IAdvancedAppSettings,
+  IAppSettings,
 } from "src/common/types";
 import { Buffer } from "buffer";
 
@@ -25,21 +27,115 @@ export const deleteConferenceSettings = () => {
 // Settings
 const SETTINGS_KEY = "SettingsKey";
 
+interface saveSettingFormat {
+  active: boolean;
+  encoded: string;
+  id: number;
+}
+
 export const saveSettings = (settings: AppSettings) => {
   const encoded = Buffer.from(JSON.stringify(settings), "utf-8").toString(
     "base64"
   );
 
-  localStorage.setItem(SETTINGS_KEY, encoded);
+  const str = localStorage.getItem(SETTINGS_KEY);
+
+  const parsed = str ? JSON.parse(str) : [];
+  const newItem = {
+    id: parsed.length + 1,
+    encoded,
+    active: parsed.length === 0,
+  };
+
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify([...parsed, newItem]));
 };
 
-export const getSettings = (): AppSettings => {
+export const editSettings = (settings: AppSettings, id: number) => {
+  const encoded = Buffer.from(JSON.stringify(settings), "utf-8").toString(
+    "base64"
+  );
+
   const str = localStorage.getItem(SETTINGS_KEY);
   if (str) {
-    const planText = Buffer.from(str, "base64").toString("utf-8");
-    return JSON.parse(planText) as AppSettings;
+    const parsed = JSON.parse(str);
+
+    // for edit:
+    const newData = parsed.map((el: saveSettingFormat) => {
+      if (el.id === id)
+        return {
+          id: el.id,
+          active: el.active,
+          encoded: encoded,
+        };
+      else return el;
+    });
+
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(newData));
   }
-  return {} as AppSettings;
+};
+export const setActiveSettings = (id: number) => {
+  const str = localStorage.getItem(SETTINGS_KEY);
+
+  if (str) {
+    const parsed = JSON.parse(str);
+
+    const newData = parsed.map((el: saveSettingFormat) => ({
+      ...el,
+      active: el.id === id,
+    }));
+
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(newData));
+  }
+};
+
+export const deleteSettings = (id: number) => {
+  const str = localStorage.getItem(SETTINGS_KEY);
+  if (str) {
+    const parsed = JSON.parse(str);
+
+    // for edit:
+    const newData = parsed.filter((el: saveSettingFormat) => el.id !== id);
+
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(newData));
+  }
+};
+
+export const getSettings = (): IAppSettings[] => {
+  const str = localStorage.getItem(SETTINGS_KEY);
+  if (str) {
+    const data: { active: boolean; encoded: string; id: number }[] =
+      JSON.parse(str);
+    const decoded: IAppSettings[] = data.map((el) => {
+      return {
+        active: el.active,
+        decoded: JSON.parse(
+          Buffer.from(el.encoded, "base64").toString("utf-8")
+        ),
+        id: el.id,
+      };
+    });
+    return decoded;
+  }
+  return [] as IAppSettings[];
+};
+
+export const getActiveSettings = (): IAppSettings => {
+  const str = localStorage.getItem(SETTINGS_KEY);
+  if (str) {
+    const parsed: { active: boolean; encoded: string; id: number }[] =
+      JSON.parse(str);
+
+    const activeSettings = parsed.find((el) => el.active);
+    const decoded = {
+      active: activeSettings?.active,
+      decoded: JSON.parse(
+        Buffer.from(activeSettings?.encoded!, "base64").toString("utf-8")
+      ),
+      id: activeSettings?.id,
+    };
+    return decoded as IAppSettings;
+  }
+  return {} as IAppSettings;
 };
 
 // Advanced settings
@@ -50,16 +146,52 @@ export const saveAddvancedSettings = (settings: AdvancedAppSettings) => {
     "base64"
   );
 
-  localStorage.setItem(ADVANCED_SETTINGS_KET, encoded);
+  const str = localStorage.getItem(ADVANCED_SETTINGS_KET);
+  const data = str ? JSON.parse(str) : [];
+
+  if (data.some((el: { encoded: string }) => el.encoded === encoded)) return;
+
+  data.push({ encoded, active: data.length === 0, id: data.length + 1 });
+  localStorage.setItem(ADVANCED_SETTINGS_KET, JSON.stringify(data));
 };
 
-export const getAdvancedSettings = (): AdvancedAppSettings => {
+export const getAdvancedSettings = (): IAdvancedAppSettings[] => {
   const str = localStorage.getItem(ADVANCED_SETTINGS_KET);
+
   if (str) {
-    const planText = Buffer.from(str, "base64").toString("utf-8");
-    return JSON.parse(planText) as AdvancedAppSettings;
+    const data: { active: boolean; encoded: string; id: number }[] =
+      JSON.parse(str);
+    const decoded: IAdvancedAppSettings[] = data.map((el) => {
+      return {
+        active: el.active,
+        decoded: JSON.parse(
+          Buffer.from(el.encoded, "base64").toString("utf-8")
+        ),
+        id: el.id,
+      };
+    });
+    return decoded;
   }
-  return {} as AdvancedAppSettings;
+  return [] as IAdvancedAppSettings[];
+};
+export const getActiveAdvancedSettings = (): IAdvancedAppSettings => {
+  const str = localStorage.getItem(ADVANCED_SETTINGS_KET);
+
+  if (str) {
+    const data: { active: boolean; encoded: string; id: number }[] =
+      JSON.parse(str);
+    const decoded: IAdvancedAppSettings[] = data.map((el) => {
+      return {
+        active: el.active,
+        decoded: JSON.parse(
+          Buffer.from(el.encoded, "base64").toString("utf-8")
+        ),
+        id: el.id,
+      };
+    });
+    return decoded.find((el) => el.active) as IAdvancedAppSettings;
+  }
+  return {} as IAdvancedAppSettings;
 };
 
 // Call History

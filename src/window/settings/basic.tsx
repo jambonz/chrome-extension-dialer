@@ -1,12 +1,10 @@
 import {
-  Box,
   Button,
   FormControl,
   FormLabel,
   HStack,
   Image,
   Input,
-  Spacer,
   Text,
   VStack,
   useToast,
@@ -59,20 +57,22 @@ export const BasicSettings = () => {
 
   useEffect(() => {
     const settings = getSettings();
-    if (settings.sipDomain) {
-      setSipDomain(settings.sipDomain);
+    const activeSettings = settings.find((el) => el.active);
+
+    if (activeSettings?.decoded.sipDomain) {
+      setSipDomain(activeSettings?.decoded.sipDomain);
     }
-    if (settings.sipServerAddress) {
-      setSipServerAddress(settings.sipServerAddress);
+    if (activeSettings?.decoded.sipServerAddress) {
+      setSipServerAddress(activeSettings?.decoded.sipServerAddress);
     }
-    if (settings.sipUsername) {
-      setSipUsername(settings.sipUsername);
+    if (activeSettings?.decoded.sipUsername) {
+      setSipUsername(activeSettings?.decoded.sipUsername);
     }
-    if (settings.sipPassword) {
-      setSipPassword(settings.sipPassword);
+    if (activeSettings?.decoded.sipPassword) {
+      setSipPassword(activeSettings?.decoded.sipPassword);
     }
-    if (settings.sipDisplayName) {
-      setSipDisplayName(settings.sipDisplayName);
+    if (activeSettings?.decoded.sipDisplayName) {
+      setSipDisplayName(activeSettings?.decoded.sipDisplayName);
     }
   }, []);
   return (

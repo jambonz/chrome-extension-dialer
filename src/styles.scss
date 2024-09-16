@@ -1,7 +1,11 @@
+@font-face {
+  font-family: "Source Sans";
+  src: url("../public/fonts/SourceSans3-Regular.ttf") format("truetype");
+}
+
 .container {
   width: 280px;
   height: 480px;
-  font-family: Arial, sans-serif;
   margin: 0;
   padding: 0;
 }

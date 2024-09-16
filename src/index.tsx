@@ -5,6 +5,7 @@ import mainTheme from "./theme";
 import WindowApp from "./window/app";
 
 // This file is being used only for dev.
+
 const root = document.createElement("div");
 root.className = "container";
 document.body.appendChild(root);

@@ -33,16 +33,19 @@ export const AdvancedSettings = () => {
 
   useEffect(() => {
     const settings = getAdvancedSettings();
-    if (settings.apiServer) {
+    const activeSettings = settings.find(
+      (el: { active: boolean }) => el.active
+    );
+    if (activeSettings?.decoded.apiServer) {
       setIsAdvancedMode(true);
       checkCredential();
-      setApiServer(settings.apiServer);
+      setApiServer(activeSettings?.decoded.apiServer);
     }
-    if (settings.apiKey) {
-      setApiKey(settings.apiKey);
+    if (activeSettings?.decoded.apiKey) {
+      setApiKey(activeSettings?.decoded.apiKey);
     }
-    if (settings.accountSid) {
-      setAccountSid(settings.accountSid);
+    if (activeSettings?.decoded.accountSid) {
+      setAccountSid(activeSettings?.decoded.accountSid);
     }
   }, []);
 

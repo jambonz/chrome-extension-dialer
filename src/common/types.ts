@@ -57,6 +57,16 @@ export interface AppSettings {
   sipUsername: string;
   sipPassword: string;
   sipDisplayName: string;
+
+  accountSid?: string;
+  apiKey?: string;
+  apiServer?: string;
+}
+
+export interface IAppSettings {
+  active: boolean;
+  decoded: AppSettings;
+  id: number;
 }
 
 export interface ConferenceSettings {
@@ -69,6 +79,12 @@ export interface AdvancedAppSettings {
   accountSid: string;
   apiKey: string;
   apiServer: string;
+}
+
+export interface IAdvancedAppSettings {
+  active: boolean;
+  decoded: AdvancedAppSettings;
+  id: number;
 }
 
 export interface CallHistory {
