@@ -126,14 +126,16 @@ export const getActiveSettings = (): IAppSettings => {
       JSON.parse(str);
 
     const activeSettings = parsed.find((el) => el.active);
-    const decoded = {
-      active: activeSettings?.active,
-      decoded: JSON.parse(
-        Buffer.from(activeSettings?.encoded!, "base64").toString("utf-8")
-      ),
-      id: activeSettings?.id,
-    };
-    return decoded as IAppSettings;
+    if (activeSettings) {
+      const decoded = {
+        active: activeSettings?.active,
+        decoded: JSON.parse(
+          Buffer.from(activeSettings?.encoded!, "base64").toString("utf-8")
+        ),
+        id: activeSettings?.id,
+      };
+      return decoded as IAppSettings;
+    }
   }
   return {} as IAppSettings;
 };
