@@ -39,33 +39,15 @@ export const saveSettings = (settings: AppSettings) => {
   );
 
   const str = localStorage.getItem(SETTINGS_KEY);
-  if (str) {
-    const parsed = JSON.parse(str);
 
-    if (parsed.length < 1) {
-      localStorage.setItem(
-        SETTINGS_KEY,
-        JSON.stringify([{ id: 1, encoded, active: true }])
-      );
-    } else {
-      localStorage.setItem(
-        SETTINGS_KEY,
-        JSON.stringify([
-          ...parsed,
-          {
-            encoded,
-            active: false,
-            id: parsed.length + 1,
-          },
-        ])
-      );
-    }
-  } else {
-    localStorage.setItem(
-      SETTINGS_KEY,
-      JSON.stringify([{ id: 1, encoded, active: true }])
-    );
-  }
+  const parsed = str ? JSON.parse(str) : [];
+  const newItem = {
+    id: parsed.length + 1,
+    encoded,
+    active: parsed.length === 0,
+  };
+
+  localStorage.setItem(SETTINGS_KEY, JSON.stringify([...parsed, newItem]));
 };
 
 export const editSettings = (settings: AppSettings, id: number) => {
@@ -93,24 +75,14 @@ export const editSettings = (settings: AppSettings, id: number) => {
 };
 export const setActiveSettings = (id: number) => {
   const str = localStorage.getItem(SETTINGS_KEY);
+
   if (str) {
     const parsed = JSON.parse(str);
 
-    // for edit:
-    const newData = parsed.map((el: saveSettingFormat) => {
-      if (el.id === id)
-        return {
-          id: el.id,
-          active: true,
-          encoded: el.encoded,
-        };
-      else
-        return {
-          id: el.id,
-          active: false,
-          encoded: el.encoded,
-        };
-    });
+    const newData = parsed.map((el: saveSettingFormat) => ({
+      ...el,
+      active: el.id === id,
+    }));
 
     localStorage.setItem(SETTINGS_KEY, JSON.stringify(newData));
   }
@@ -150,18 +122,18 @@ export const getSettings = (): IAppSettings[] => {
 export const getActiveSettings = (): IAppSettings => {
   const str = localStorage.getItem(SETTINGS_KEY);
   if (str) {
-    const data: { active: boolean; encoded: string; id: number }[] =
+    const parsed: { active: boolean; encoded: string; id: number }[] =
       JSON.parse(str);
-    const decoded: IAppSettings[] = data.map((el) => {
-      return {
-        active: el.active,
-        decoded: JSON.parse(
-          Buffer.from(el.encoded, "base64").toString("utf-8")
-        ),
-        id: el.id,
-      };
-    });
-    return decoded.find((el) => el.active) as IAppSettings;
+
+    const activeSettings = parsed.find((el) => el.active);
+    const decoded = {
+      active: activeSettings?.active,
+      decoded: JSON.parse(
+        Buffer.from(activeSettings?.encoded!, "base64").toString("utf-8")
+      ),
+      id: activeSettings?.id,
+    };
+    return decoded as IAppSettings;
   }
   return {} as IAppSettings;
 };
@@ -175,24 +147,12 @@ export const saveAddvancedSettings = (settings: AdvancedAppSettings) => {
   );
 
   const str = localStorage.getItem(ADVANCED_SETTINGS_KET);
+  const data = str ? JSON.parse(str) : [];
 
-  if (str) {
-    const data = JSON.parse(str);
-    const alreadyExists = data.filter(
-      (el: { encoded: string; active: boolean }) => el.encoded === encoded
-    );
-    if (!!alreadyExists.length) return;
+  if (data.some((el: { encoded: string }) => el.encoded === encoded)) return;
 
-    localStorage.setItem(
-      ADVANCED_SETTINGS_KET,
-      JSON.stringify([...data, { encoded, active: false, id: data.length + 1 }])
-    );
-  } else {
-    localStorage.setItem(
-      ADVANCED_SETTINGS_KET,
-      JSON.stringify([{ encoded, active: true, id: 1 }])
-    );
-  }
+  data.push({ encoded, active: data.length === 0, id: data.length + 1 });
+  localStorage.setItem(ADVANCED_SETTINGS_KET, JSON.stringify(data));
 };
 
 export const getAdvancedSettings = (): IAdvancedAppSettings[] => {
