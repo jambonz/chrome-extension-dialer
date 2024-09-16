@@ -23,6 +23,7 @@ import { getAdvancedValidation } from "src/api";
 import Switch from "src/imgs/icons/Switch.svg";
 import Trash from "src/imgs/icons/Trash.svg";
 import invalid from "src/imgs/icons/invalid.svg";
+import AnimateOnShow from "src/components/animate";
 
 function AccountForm({
   closeForm,
@@ -217,70 +218,72 @@ function AccountForm({
             />
           </FormControl>
           {showAdvanced && (
-            <VStack w={"full"} bg={"gray.50"} borderRadius={"2xl"} p={"3.5"}>
-              <FormControl id={`jambonz_api_server${inputUniqueId}`}>
-                <FormLabel>Jambonz API Server Base URL</FormLabel>
-                <Input
-                  type="text"
-                  placeholder="https://jambonz.cloud/api"
-                  isRequired
-                  value={apiServer}
-                  onChange={(e) => setApiServer(e.target.value)}
-                />
-              </FormControl>
-              <FormControl id={`jambonz_account_sid${inputUniqueId}`}>
-                <FormLabel>Jambonz Account Sid</FormLabel>
-                <Input
-                  type="text"
-                  isRequired
-                  value={accountSid}
-                  onChange={(e) => setAccountSid(e.target.value)}
-                />
-              </FormControl>
-              <FormControl id={`api_key${inputUniqueId}`}>
-                <FormLabel>API Key</FormLabel>
-                <PasswordInput
-                  password={[apiKey || "", setApiKey]}
-                  isRequired
-                />
-              </FormControl>
+            <AnimateOnShow>
+              <VStack w={"full"} bg={"gray.50"} borderRadius={"2xl"} p={"3.5"}>
+                <FormControl id={`jambonz_api_server${inputUniqueId}`}>
+                  <FormLabel>Jambonz API Server Base URL</FormLabel>
+                  <Input
+                    type="text"
+                    placeholder="https://jambonz.cloud/api"
+                    isRequired
+                    value={apiServer}
+                    onChange={(e) => setApiServer(e.target.value)}
+                  />
+                </FormControl>
+                <FormControl id={`jambonz_account_sid${inputUniqueId}`}>
+                  <FormLabel>Jambonz Account Sid</FormLabel>
+                  <Input
+                    type="text"
+                    isRequired
+                    value={accountSid}
+                    onChange={(e) => setAccountSid(e.target.value)}
+                  />
+                </FormControl>
+                <FormControl id={`api_key${inputUniqueId}`}>
+                  <FormLabel>API Key</FormLabel>
+                  <PasswordInput
+                    password={[apiKey || "", setApiKey]}
+                    isRequired
+                  />
+                </FormControl>
 
-              {isAdvancedMode && (
-                <HStack
-                  w="full"
-                  mt={2}
-                  mb={2}
-                  gap={"1.5"}
-                  alignItems={"center"}
-                >
-                  <Text
-                    fontSize="12px"
-                    fontWeight={600}
-                    color={isCredentialOk ? "greenish.500" : "jambonz.450"}
+                {isAdvancedMode && (
+                  <HStack
+                    w="full"
+                    mt={2}
+                    mb={2}
+                    gap={"1.5"}
+                    alignItems={"center"}
                   >
-                    {isCredentialOk
-                      ? "Credentials are valid"
-                      : "We cant verify your credentials"}
-                  </Text>
-                  {isCredentialOk ? (
-                    <Box
-                      as={FontAwesomeIcon}
-                      icon={faCheckCircle}
-                      color={"greenish.500"}
-                    />
-                  ) : (
-                    <Box w={"22px"} h={"22px"} p={0} marginLeft={-1}>
-                      <Image
-                        width={"full"}
-                        height={"full"}
-                        p={0}
-                        src={invalid}
+                    <Text
+                      fontSize="12px"
+                      fontWeight={600}
+                      color={isCredentialOk ? "greenish.500" : "jambonz.450"}
+                    >
+                      {isCredentialOk
+                        ? "Credentials are valid"
+                        : "We cant verify your credentials"}
+                    </Text>
+                    {isCredentialOk ? (
+                      <Box
+                        as={FontAwesomeIcon}
+                        icon={faCheckCircle}
+                        color={"greenish.500"}
                       />
-                    </Box>
-                  )}
-                </HStack>
-              )}
-            </VStack>
+                    ) : (
+                      <Box w={"22px"} h={"22px"} p={0} marginLeft={-1}>
+                        <Image
+                          width={"full"}
+                          height={"full"}
+                          p={0}
+                          src={invalid}
+                        />
+                      </Box>
+                    )}
+                  </HStack>
+                )}
+              </VStack>
+            </AnimateOnShow>
           )}
           <Center flexDirection={"column"} gap={"2.5"}>
             <Button

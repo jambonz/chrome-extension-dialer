@@ -5,7 +5,7 @@ function AnimateOnShow({
   children,
   initial = -20,
   exit = -20,
-  duration = 0.3,
+  duration = 0.5,
 }: {
   children: ReactNode;
   initial?: number;
@@ -14,10 +14,11 @@ function AnimateOnShow({
 }) {
   return (
     <motion.div
-      initial={{ opacity: 0, y: initial }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: exit }}
+      initial={{ opacity: 0, y: initial, height: 0 }}
+      animate={{ opacity: 1, y: 0, height: "auto" }}
+      exit={{ opacity: 0, y: exit, height: 0 }}
       transition={{ duration: duration }}
+      style={{ width: "100%" }}
     >
       {children}
     </motion.div>
