@@ -120,7 +120,6 @@ export const Phone = forwardRef(
   ) => {
     const [inputNumber, setInputNumber] = useState("");
     const [appName, setAppName] = useState("");
-    const [isConfigured, setIsConfigured] = useState(false);
     const [callStatus, setCallStatus] = useState(SipConstants.SESSION_ENDED);
     const [sessionDirection, setSessionDirection] =
       useState<SipCallDirection>("");
@@ -145,6 +144,7 @@ export const Phone = forwardRef(
     const sessionDirectionRef = useRef(sessionDirection);
     const sipUA = useRef<SipUA | null>(null);
     const timerRef = useRef<NodeJS.Timer | null>(null);
+    const FetchUsertimerRef = useRef<NodeJS.Timer | null>(null);
     const isRestartRef = useRef(false);
     const sipDomainRef = useRef("");
     const sipUsernameRef = useRef("");
@@ -299,7 +299,7 @@ export const Phone = forwardRef(
       setStatus,
       startCallDurationCounter,
       toast,
-      setIsOnline
+      setIsOnline,
     ]);
 
     useEffect(() => {
@@ -319,19 +319,9 @@ export const Phone = forwardRef(
         } else {
           createSipClient();
         }
-        setIsConfigured(true);
       } else {
-        setIsConfigured(false);
         clientGoOffline();
       }
-      fetchRegisterUser();
-      getConferences()
-        ?.then(() => {
-          setShowConference(true);
-        })
-        .catch(() => {
-          setShowConference(false);
-        });
     }, [
       sipDomain,
       sipUsername,
@@ -405,14 +395,31 @@ export const Phone = forwardRef(
       }
     }, [status, setIsOnline, setIsSwitchingUserStatus]);
 
+    const clearFetchUserTimer = () => {
+      if (FetchUsertimerRef.current) {
+        clearInterval(FetchUsertimerRef.current);
+        FetchUsertimerRef.current = null;
+      }
+    };
+
     useEffect(() => {
-      const timer = setInterval(() => {
-        fetchRegisterUser();
-      }, 10000);
-      return () => {
-        clearInterval(timer);
-      };
-    }, []);
+      if (isAdvanceMode) {
+        // check conference aibility
+        getConferences()
+          .then(() => {
+            setShowConference(true);
+          })
+          .catch(() => {
+            setShowConference(false);
+          });
+        FetchUsertimerRef.current = setInterval(() => {
+          fetchRegisterUser();
+        }, 10_000);
+      } else {
+        clearFetchUserTimer();
+        setShowConference(false);
+      }
+    }, [isAdvanceMode]);
 
     useEffect(() => {
       if (showAccounts) {
@@ -553,9 +560,7 @@ export const Phone = forwardRef(
     const handleSetActive = (id: number) => {
       setActiveSettings(id);
       setShowAccounts(false);
-      // fetchRegisterUser();
       reload();
-      // window.location.reload();
     };
 
     const handleClickOutside = (event: Event) => {
