@@ -91,12 +91,18 @@ export const setActiveSettings = (id: number) => {
 export const deleteSettings = (id: number) => {
   const str = localStorage.getItem(SETTINGS_KEY);
   if (str) {
-    const parsed = JSON.parse(str);
+    const parsed = JSON.parse(str) as saveSettingFormat[];
 
-    // for edit:
-    const newData = parsed.filter((el: saveSettingFormat) => el.id !== id);
+    const setting = parsed.find((s) => s.id === id);
 
-    localStorage.setItem(SETTINGS_KEY, JSON.stringify(newData));
+    const newSettings = parsed.filter((el) => el.id !== id);
+
+    // deleting active account, reassign active to next account
+    if (setting?.active && newSettings.length) {
+      newSettings[0].active = true;
+    }
+
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(newSettings));
   }
 };
 
@@ -126,14 +132,16 @@ export const getActiveSettings = (): IAppSettings => {
       JSON.parse(str);
 
     const activeSettings = parsed.find((el) => el.active);
-    const decoded = {
-      active: activeSettings?.active,
-      decoded: JSON.parse(
-        Buffer.from(activeSettings?.encoded!, "base64").toString("utf-8")
-      ),
-      id: activeSettings?.id,
-    };
-    return decoded as IAppSettings;
+    if (activeSettings) {
+      const decoded = {
+        active: activeSettings?.active,
+        decoded: JSON.parse(
+          Buffer.from(activeSettings.encoded, "base64").toString("utf-8")
+        ),
+        id: activeSettings.id,
+      };
+      return decoded as IAppSettings;
+    }
   }
   return {} as IAppSettings;
 };
