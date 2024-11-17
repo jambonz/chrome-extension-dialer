@@ -206,93 +206,105 @@ export const Phone = forwardRef(
         register: true,
       };
 
-      const sipClient = new SipUA(client, settings);
+      try {
+        const sipClient = new SipUA(client, settings);
 
-      // UA Status
-      sipClient.on(SipConstants.UA_REGISTERED, (args) => {
-        setStatus("registered");
-      });
-      sipClient.on(SipConstants.UA_UNREGISTERED, (args) => {
-        setStatus("unregistered");
-        if (sipUA.current) {
-          sipUA.current.stop();
-        }
-        unregisteredReasonRef.current = `User is not registered${
-          args.cause ? `, ${args.cause}` : ""
-        }`;
-      });
+        // UA Status
+        sipClient.on(SipConstants.UA_REGISTERED, (args) => {
+          setStatus("registered");
+        });
+        sipClient.on(SipConstants.UA_UNREGISTERED, (args) => {
+          setStatus("unregistered");
+          if (sipUA.current) {
+            sipUA.current.stop();
+          }
+          unregisteredReasonRef.current = `User is not registered${
+            args.cause ? `, ${args.cause}` : ""
+          }`;
+        });
 
-      sipClient.on(SipConstants.UA_DISCONNECTED, (args) => {
-        if (unregisteredReasonRef.current) {
-          toast({
-            title: unregisteredReasonRef.current,
-            status: "warning",
-            duration: DEFAULT_TOAST_DURATION,
-            isClosable: true,
-          });
-          unregisteredReasonRef.current = "";
-        }
-        setStatus("disconnected");
-        setIsOnline(false);
-        setIsSwitchingUserStatus(false);
-        if (sipUA.current) {
-          sipUA.current.stop();
-        }
+        sipClient.on(SipConstants.UA_DISCONNECTED, (args) => {
+          if (unregisteredReasonRef.current) {
+            toast({
+              title: unregisteredReasonRef.current,
+              status: "warning",
+              duration: DEFAULT_TOAST_DURATION,
+              isClosable: true,
+            });
+            unregisteredReasonRef.current = "";
+          }
+          setStatus("disconnected");
+          setIsOnline(false);
+          setIsSwitchingUserStatus(false);
+          if (sipUA.current) {
+            sipUA.current.stop();
+          }
 
-        if (args.error) {
-          toast({
-            title: `Cannot connect to ${sipServerAddressRef.current}${
-              args.reason ? `, ${args.reason}` : ""
-            }`,
-            status: "warning",
-            duration: DEFAULT_TOAST_DURATION,
-            isClosable: true,
-          });
-        } else if (isRestartRef.current) {
-          createSipClient();
-          isRestartRef.current = false;
-        }
-      });
-      // Call Status
-      sipClient.on(SipConstants.SESSION_RINGING, (args) => {
-        if (args.session.direction === "incoming") {
-          saveCurrentCall({
-            number: args.session.user,
-            direction: args.session.direction,
-            timeStamp: Date.now(),
-            duration: "0",
-            callSid: uuidv4(),
-          });
-        }
-        setCallStatus(SipConstants.SESSION_RINGING);
-        setSessionDirection(args.session.direction);
-        setInputNumber(args.session.user);
-      });
-      sipClient.on(SipConstants.SESSION_ANSWERED, (args) => {
-        setCallSid(args.callSid);
-        const currentCall = getCurrentCall();
-        if (currentCall) {
-          currentCall.timeStamp = Date.now();
-          saveCurrentCall(currentCall);
-        }
-        setCallStatus(SipConstants.SESSION_ANSWERED);
-        startCallDurationCounter();
-      });
-      sipClient.on(SipConstants.SESSION_ENDED, (args) => {
-        addCallHistory();
-        setCallStatus(SipConstants.SESSION_ENDED);
-        setSessionDirection("");
-        stopCallDurationCounter();
-      });
-      sipClient.on(SipConstants.SESSION_FAILED, (args) => {
-        addCallHistory();
-        setCallStatus(SipConstants.SESSION_FAILED);
-        setSessionDirection("");
-        stopCallDurationCounter();
-      });
+          if (args.error) {
+            toast({
+              title: `Cannot connect to ${sipServerAddressRef.current}${
+                args.reason ? `, ${args.reason}` : ""
+              }`,
+              status: "warning",
+              duration: DEFAULT_TOAST_DURATION,
+              isClosable: true,
+            });
+          } else if (isRestartRef.current) {
+            createSipClient();
+            isRestartRef.current = false;
+          }
+        });
+        // Call Status
+        sipClient.on(SipConstants.SESSION_RINGING, (args) => {
+          if (args.session.direction === "incoming") {
+            saveCurrentCall({
+              number: args.session.user,
+              direction: args.session.direction,
+              timeStamp: Date.now(),
+              duration: "0",
+              callSid: uuidv4(),
+            });
+          }
+          setCallStatus(SipConstants.SESSION_RINGING);
+          setSessionDirection(args.session.direction);
+          setInputNumber(args.session.user);
+        });
+        sipClient.on(SipConstants.SESSION_ANSWERED, (args) => {
+          setCallSid(args.callSid);
+          const currentCall = getCurrentCall();
+          if (currentCall) {
+            currentCall.timeStamp = Date.now();
+            saveCurrentCall(currentCall);
+          }
+          setCallStatus(SipConstants.SESSION_ANSWERED);
+          startCallDurationCounter();
+        });
+        sipClient.on(SipConstants.SESSION_ENDED, (args) => {
+          addCallHistory();
+          setCallStatus(SipConstants.SESSION_ENDED);
+          setSessionDirection("");
+          stopCallDurationCounter();
+        });
+        sipClient.on(SipConstants.SESSION_FAILED, (args) => {
+          addCallHistory();
+          setCallStatus(SipConstants.SESSION_FAILED);
+          setSessionDirection("");
+          stopCallDurationCounter();
+        });
 
-      sipClient.start();
-      sipUA.current = sipClient;
+        sipClient.start();
+        sipUA.current = sipClient;
+      } catch (error) {
+        console.error(error);
+        toast({
+          title: `Invalid configuration for ${
+            sipDisplayNameRef.current ?? sipUsernameRef.current
+          }`,
+          status: "warning",
+          duration: DEFAULT_TOAST_DURATION,
+          isClosable: true,
+        });
+      }
     }, [
       addCallHistory,
       setIsSwitchingUserStatus,
