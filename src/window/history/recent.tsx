@@ -1,7 +1,7 @@
 import { Text, UnorderedList, VStack } from "@chakra-ui/react";
 import CallHistoryItem from "./call-history-item";
 import { CallHistory } from "src/common/types";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Fuse from "fuse.js";
 
 type RecentsProbs = {
@@ -19,27 +19,22 @@ export const Recents = ({
   onDataChange,
   onCallNumber,
 }: RecentsProbs) => {
-  const [callHistories, setCallHistories] = useState<CallHistory[]>(calls);
+  const baseCalls = useMemo(
+    () => (isSaved ? calls.filter((c) => c.isSaved === true) : calls),
+    [calls, isSaved]
+  );
 
-  useEffect(() => {
+  const fuseInstance = useMemo(
+    () => new Fuse(baseCalls, { keys: ["number"] }),
+    [baseCalls]
+  );
+
+  const callHistories = useMemo(() => {
     if (search) {
-      setCallHistories((prev) =>
-        new Fuse(prev, {
-          keys: ["number"],
-        })
-          .search(search)
-          .map(({ item }) => item)
-      );
-    } else {
-      setCallHistories(
-        isSaved ? calls.filter((c) => c.isSaved === true) : calls
-      );
+      return fuseInstance.search(search).map(({ item }) => item);
     }
-  }, [search]);
-
-  useEffect(() => {
-    setCallHistories(isSaved ? calls.filter((c) => c.isSaved === true) : calls);
-  }, [calls]);
+    return baseCalls;
+  }, [search, fuseInstance, baseCalls]);
 
   return (
     <VStack spacing={2}>

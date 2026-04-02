@@ -1,6 +1,6 @@
 import { Box, Button, HStack, VStack } from "@chakra-ui/react";
 import DialPadAudioElements from "./DialPadSoundElement";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 
 type DialPadProbs = {
   handleDigitPress: (digit: string, fromKeyboard: boolean) => void;
@@ -8,17 +8,24 @@ type DialPadProbs = {
 
 const keySounds = new DialPadAudioElements();
 
+const buttons = [
+  ["1", "2", "3"],
+  ["4", "5", "6"],
+  ["7", "8", "9"],
+  ["*", "0", "#"],
+];
+
 export const DialPad = ({ handleDigitPress }: DialPadProbs) => {
   const selfRef = useRef<HTMLDivElement | null>(null);
   const isVisibleRef = useRef(false);
-  const buttons = [
-    ["1", "2", "3"],
-    ["4", "5", "6"],
-    ["7", "8", "9"],
-    ["*", "0", "#"],
-  ];
+  const handleDigitPressRef = useRef(handleDigitPress);
 
-  const handleKeyDown = (e: KeyboardEvent) => {
+  // Keep ref in sync so the keydown listener always uses the latest callback
+  useEffect(() => {
+    handleDigitPressRef.current = handleDigitPress;
+  }, [handleDigitPress]);
+
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if (
       ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "*", "#"].includes(
         e.key
@@ -26,10 +33,10 @@ export const DialPad = ({ handleDigitPress }: DialPadProbs) => {
     ) {
       if (isVisibleRef.current) {
         keySounds?.playKeyTone(e.key);
-        handleDigitPress(e.key, true);
+        handleDigitPressRef.current(e.key, true);
       }
     }
-  };
+  }, []);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
@@ -50,7 +57,7 @@ export const DialPad = ({ handleDigitPress }: DialPadProbs) => {
         observer.unobserve(selfRef.current);
       }
     };
-  }, []);
+  }, [handleKeyDown]);
 
   return (
     <Box p={2} w="full" h="280px" ref={selfRef}>

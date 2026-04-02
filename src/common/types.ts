@@ -1,4 +1,5 @@
 import { ConferenceModes } from "src/api/types";
+import type { ClientState } from "@jambonz/client-sdk-web";
 
 export interface LoginCredential {
   name?: string;
@@ -97,12 +98,5 @@ export interface CallHistory {
   isSaved?: boolean;
 }
 
-export type SipClientStatus =
-  | "start"
-  | "stop"
-  | "connecting"
-  | "connected"
-  | "disconnected"
-  | "registered"
-  | "unregistered";
-export type SipCallDirection = "" | "outgoing" | "incoming";
+export type SipClientStatus = ClientState;
+export type SipCallDirection = "" | "outbound" | "inbound";

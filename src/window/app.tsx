@@ -10,11 +10,12 @@ import {
 import Phone from "./phone";
 import Settings from "./settings";
 import { DEFAULT_COLOR_SCHEME } from "src/common/constants";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { getActiveSettings, getCallHistories, getSettings } from "src/storage";
 
 import CallHistories from "./history";
 import { CallHistory, IAppSettings, SipClientStatus } from "src/common/types";
+import { ClientState } from "@jambonz/client-sdk-web";
 import Footer from "./footer/footer";
 
 export const WindowApp = () => {
@@ -27,33 +28,25 @@ export const WindowApp = () => {
   const [calledNumber, setCalledNumber] = useState("");
   const [calledName, setCalledName] = useState("");
   const [tabIndex, setTabIndex] = useState(0);
-  const [status, setStatus] = useState<SipClientStatus>("stop");
+  const [status, setStatus] = useState<SipClientStatus>(ClientState.Disconnected);
   const [allSettings, setAllSettings] = useState<IAppSettings[]>([]);
   const [advancedSettings, setAdvancedSettings] = useState<IAppSettings | null>(
     null
   );
   const [isSwitchingUserStatus, setIsSwitchingUserStatus] = useState(false);
   const [isOnline, setIsOnline] = useState(false);
-  const phoneSipAschildRef = useRef<{
-    updateGoOffline: (x: string) => void;
-  } | null>(null);
+  const [isUserOffline, setIsUserOffline] = useState(false);
 
   const handleGoOffline = (s: SipClientStatus) => {
-    if (s === status) {
-      return;
-    }
-    if (phoneSipAschildRef.current) {
-      if (s === "unregistered") {
-        phoneSipAschildRef.current.updateGoOffline("stop");
-      } else {
-        phoneSipAschildRef.current.updateGoOffline("start");
-      }
+    if (s === ClientState.Unregistered) {
+      setIsUserOffline(true);
+    } else {
+      setIsUserOffline(false);
     }
   };
 
   const loadSettings = () => {
     const settings = getSettings();
-
     const activeSettings = settings.find((el) => el.active);
 
     setAllSettings(getSettings());
@@ -70,7 +63,6 @@ export const WindowApp = () => {
       title: "Dialer",
       content: (
         <Phone
-          ref={phoneSipAschildRef}
           sipUsername={sipUsername}
           sipPassword={sipPassword}
           sipDomain={sipDomain}
@@ -84,6 +76,7 @@ export const WindowApp = () => {
           reload={loadSettings}
           setIsSwitchingUserStatus={setIsSwitchingUserStatus}
           setIsOnline={setIsOnline}
+          isUserOffline={isUserOffline}
         />
       ),
     },

@@ -1,4 +1,4 @@
-import { SipConstants } from "./../lib";
+import { CallState } from "@jambonz/client-sdk-web";
 import { deleteWindowIdKey, getWindowIdKey, saveWindowIdKey } from "./storage";
 import { PhoneNumberFormat, PhoneNumberUtil } from "google-libphonenumber";
 
@@ -44,19 +44,16 @@ const initiateNewPhonePopup = (callback: (v: unknown) => void) => {
   });
 };
 
-export const isSipClientRinging = (callStatus: string) => {
-  return callStatus === SipConstants.SESSION_RINGING;
+export const isSipClientRinging = (callState: CallState | null) => {
+  return callState === CallState.Ringing || callState === CallState.Connecting;
 };
 
-export const isSipClientAnswered = (callStatus: string) => {
-  return callStatus === SipConstants.SESSION_ANSWERED;
+export const isSipClientAnswered = (callState: CallState | null) => {
+  return callState === CallState.Connected;
 };
 
-export const isSipClientIdle = (callStatus: string) => {
-  return (
-    callStatus === SipConstants.SESSION_ENDED ||
-    callStatus === SipConstants.SESSION_FAILED
-  );
+export const isSipClientIdle = (callState: CallState | null) => {
+  return callState === null || callState === CallState.Idle || callState === CallState.Ended;
 };
 
 export const normalizeUrl = (input: string): string => {
