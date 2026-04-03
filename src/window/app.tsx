@@ -110,16 +110,20 @@ export const WindowApp = () => {
     setCallHistories(getCallHistories(sipUsername));
   };
   return (
-    <Grid h="100vh" templateRows="1fr auto">
-      <Box p={2}>
+    <Grid h="100vh" templateRows="1fr auto" overflow="hidden">
+      <Box p={2} minH={0} display="flex" flexDirection="column" overflow="hidden">
         <Tabs
           isFitted
           variant="enclosed"
           colorScheme={DEFAULT_COLOR_SCHEME}
           onChange={onTabsChange}
           index={tabIndex}
+          display="flex"
+          flexDirection="column"
+          flex="1"
+          minH={0}
         >
-          <TabList mb="1em" gap={1}>
+          <TabList mb="1em" gap={1} flexShrink={0}>
             {tabsSettings.map((s, i) => (
               <Tab
                 _selected={{ color: "white", bg: "jambonz.500" }}
@@ -131,7 +135,7 @@ export const WindowApp = () => {
             ))}
           </TabList>
 
-          <TabPanels>
+          <TabPanels flex="1" minH={0} overflowY="auto">
             {tabsSettings.map((s, i) => (
               <TabPanel key={i}>{s.content}</TabPanel>
             ))}

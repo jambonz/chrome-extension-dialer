@@ -48,6 +48,9 @@ function AccountForm({
   const [accountSid, setAccountSid] = useState<string | undefined>("");
   const [isCredentialOk, setIsCredentialOk] = useState<boolean>(false);
   const [isAdvancedMode, setIsAdvancedMode] = useState<boolean>(false);
+  const [noiseIsolationVendor, setNoiseIsolationVendor] = useState("krisp");
+  const [noiseIsolationLevel, setNoiseIsolationLevel] = useState("0.3");
+  const [noiseIsolationModel, setNoiseIsolationModel] = useState("");
   const toast = useToast();
 
   useEffect(
@@ -62,6 +65,13 @@ function AccountForm({
         setAccountSid(formData.decoded.accountSid);
         setApiKey(formData.decoded.apiKey || "");
         setApiServer(formData.decoded.apiServer);
+        setNoiseIsolationVendor(formData.decoded.noiseIsolationVendor || "krisp");
+        setNoiseIsolationLevel(
+          formData.decoded.noiseIsolationLevel !== undefined
+            ? String(formData.decoded.noiseIsolationLevel)
+            : "0.3"
+        );
+        setNoiseIsolationModel(formData.decoded.noiseIsolationModel || "");
 
         if (
           formData.decoded.accountSid ||
@@ -101,6 +111,9 @@ function AccountForm({
       accountSid,
       apiKey,
       apiServer: apiServer ? normalizeUrl(apiServer) : "",
+      noiseIsolationVendor: noiseIsolationVendor || "krisp",
+      noiseIsolationLevel: parseFloat(noiseIsolationLevel) || 0.3,
+      noiseIsolationModel: noiseIsolationModel || undefined,
     };
 
     formData ? editSettings(settings, formData.id) : saveSettings(settings);
@@ -146,6 +159,9 @@ function AccountForm({
     setApiServer("");
     setAccountSid("");
     setIsAdvancedMode(false);
+    setNoiseIsolationVendor("krisp");
+    setNoiseIsolationLevel("0.3");
+    setNoiseIsolationModel("");
 
     if (formData) {
       handleClose && handleClose();
@@ -282,6 +298,40 @@ function AccountForm({
                     )}
                   </HStack>
                 )}
+
+                <Text fontSize="13px" fontWeight="bold" mt={2}>
+                  Noise Isolation
+                </Text>
+                <FormControl id={`noise_vendor${inputUniqueId}`}>
+                  <FormLabel>Vendor</FormLabel>
+                  <Input
+                    type="text"
+                    placeholder="krisp"
+                    value={noiseIsolationVendor}
+                    onChange={(e) => setNoiseIsolationVendor(e.target.value)}
+                  />
+                </FormControl>
+                <FormControl id={`noise_level${inputUniqueId}`}>
+                  <FormLabel>Level</FormLabel>
+                  <Input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    max="1"
+                    placeholder="0.3"
+                    value={noiseIsolationLevel}
+                    onChange={(e) => setNoiseIsolationLevel(e.target.value)}
+                  />
+                </FormControl>
+                <FormControl id={`noise_model${inputUniqueId}`}>
+                  <FormLabel>Model (Optional)</FormLabel>
+                  <Input
+                    type="text"
+                    placeholder="Model name"
+                    value={noiseIsolationModel}
+                    onChange={(e) => setNoiseIsolationModel(e.target.value)}
+                  />
+                </FormControl>
               </VStack>
             </AnimateOnShow>
           )}

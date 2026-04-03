@@ -528,7 +528,14 @@ export const Phone = ({
         activeCall.disableNoiseIsolation();
         setIsNoiseIsolation(false);
       } else {
-        activeCall.enableNoiseIsolation();
+        const settings = advancedSettings?.decoded;
+        activeCall.enableNoiseIsolation({
+          vendor: settings?.noiseIsolationVendor || "krisp",
+          level: settings?.noiseIsolationLevel ?? 0.3,
+          ...(settings?.noiseIsolationModel
+            ? { model: settings.noiseIsolationModel }
+            : {}),
+        });
         setIsNoiseIsolation(true);
       }
     }
@@ -817,51 +824,20 @@ export const Phone = ({
               Call
             </Button>
           ) : (
-            <VStack w="full" spacing={2}>
-              <HStack w="full">
-                <Tooltip label={isHeld ? "UnHold" : "Hold"}>
-                  <IconButton
-                    aria-label="Place call onhold"
-                    icon={
-                      <FontAwesomeIcon icon={isHeld ? faPlay : faPause} />
-                    }
-                    w="33%"
-                    variant="unstyled"
-                    display="flex"
-                    alignItems="center"
-                    justifyContent="center"
-                    onClick={handleCallOnHold}
-                  />
-                </Tooltip>
-
-                <Spacer />
+            <HStack w="full">
+              <Tooltip label={isHeld ? "UnHold" : "Hold"}>
                 <IconButton
-                  aria-label="Hangup"
-                  icon={<FontAwesomeIcon icon={faPhoneSlash} />}
-                  w="70px"
-                  h="70px"
-                  borderRadius="100%"
-                  colorScheme="jambonz"
-                  onClick={handleHangup}
+                  aria-label="Place call onhold"
+                  icon={
+                    <FontAwesomeIcon icon={isHeld ? faPlay : faPause} />
+                  }
+                  variant="unstyled"
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                  onClick={handleCallOnHold}
                 />
-                <Spacer />
-                <Tooltip label={isMuted ? "Unmute" : "Mute"}>
-                  <IconButton
-                    aria-label="Mute"
-                    icon={
-                      <FontAwesomeIcon
-                        icon={isMuted ? faMicrophone : faMicrophoneSlash}
-                      />
-                    }
-                    w="33%"
-                    variant="unstyled"
-                    display="flex"
-                    alignItems="center"
-                    justifyContent="center"
-                    onClick={handleCallMute}
-                  />
-                </Tooltip>
-              </HStack>
+              </Tooltip>
               {isSipClientAnswered(callState) && (
                 <Tooltip
                   label={
@@ -886,7 +862,34 @@ export const Phone = ({
                   />
                 </Tooltip>
               )}
-            </VStack>
+
+              <Spacer />
+              <IconButton
+                aria-label="Hangup"
+                icon={<FontAwesomeIcon icon={faPhoneSlash} />}
+                w="70px"
+                h="70px"
+                borderRadius="100%"
+                colorScheme="jambonz"
+                onClick={handleHangup}
+              />
+              <Spacer />
+              <Tooltip label={isMuted ? "Unmute" : "Mute"}>
+                <IconButton
+                  aria-label="Mute"
+                  icon={
+                    <FontAwesomeIcon
+                      icon={isMuted ? faMicrophone : faMicrophoneSlash}
+                    />
+                  }
+                  variant="unstyled"
+                  display="flex"
+                  alignItems="center"
+                  justifyContent="center"
+                  onClick={handleCallMute}
+                />
+              </Tooltip>
+            </HStack>
           )}
         </VStack>
       )}

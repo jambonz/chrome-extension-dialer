@@ -62,6 +62,10 @@ export interface AppSettings {
   accountSid?: string;
   apiKey?: string;
   apiServer?: string;
+
+  noiseIsolationVendor?: string;
+  noiseIsolationLevel?: number;
+  noiseIsolationModel?: string;
 }
 
 export interface IAppSettings {
