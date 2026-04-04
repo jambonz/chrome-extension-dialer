@@ -35,9 +35,9 @@ export const CallHistoryItem = ({
 }: CallHistoryItemProbs) => {
   const [callEnable, setCallEnable] = useState(false);
   const getDirectionIcon = (direction: SipCallDirection) => {
-    if (direction === "outgoing") {
+    if (direction === "outbound") {
       return faArrowRightFromBracket;
-    } else if (direction === "incoming") {
+    } else if (direction === "inbound") {
       return faArrowRightToBracket;
     } else {
       return faPhone;

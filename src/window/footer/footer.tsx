@@ -2,6 +2,7 @@ import { HStack, Image, Text } from "@chakra-ui/react";
 import jambonz from "src/imgs/jambonz.svg";
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { SipClientStatus } from "src/common/types";
+import { ClientState } from "@jambonz/client-sdk-web";
 import JambonzSwitch from "src/components/switch";
 import "./styles.scss";
 
@@ -35,9 +36,12 @@ function Footer({
   const [isConfigured, setIsConfigured] = useState(false);
 
   useEffect(() => {
-    if (status === "registered" || status === "disconnected") {
+    if (
+      status === ClientState.Registered ||
+      status === ClientState.Disconnected
+    ) {
       setIsSwitchingUserStatus(false);
-      setIsOnline(status === "registered");
+      setIsOnline(status === ClientState.Registered);
     }
   }, [status, setIsSwitchingUserStatus, setIsOnline]);
 
@@ -63,7 +67,9 @@ function Footer({
             checked={[isOnline, setIsOnline]}
             onChange={(v) => {
               setIsSwitchingUserStatus(true);
-              onHandleGoOffline(v ? "registered" : "unregistered");
+              onHandleGoOffline(
+                v ? ClientState.Registered : ClientState.Unregistered
+              );
             }}
           />
           <Text>You are {isOnline ? "online" : "offline"}</Text>

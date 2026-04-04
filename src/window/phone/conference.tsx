@@ -16,12 +16,12 @@ import { updateConferenceParticipantAction } from "src/api";
 import { ConferenceModes } from "src/api/types";
 import { DEFAULT_TOAST_DURATION } from "src/common/constants";
 import OutlineBox from "src/components/outline-box";
-import { SipConstants } from "src/lib";
 import {
   deleteConferenceSettings,
   getConferenceSettings,
   saveConferenceSettings,
 } from "src/storage";
+import { CallState } from "@jambonz/client-sdk-web";
 
 type JoinConferenceProbs = {
   conferenceId?: string;
@@ -60,9 +60,21 @@ export const JoinConference = ({
   );
   const [participantState, setParticipantState] = useState("Join as");
 
+  const updateSettings = (updates: Partial<{ mode: ConferenceModes; speakOnlyTo: string; tags: string }>) => {
+    const next = {
+      mode: updates.mode ?? mode,
+      speakOnlyTo: updates.speakOnlyTo ?? speakOnlyTo,
+      tags: updates.tags ?? tags,
+    };
+    if (updates.mode !== undefined) setMode(updates.mode);
+    if (updates.speakOnlyTo !== undefined) setSpeakOnlyTo(updates.speakOnlyTo);
+    if (updates.tags !== undefined) setTags(updates.tags);
+    saveConferenceSettings(next);
+  };
+
   useEffect(() => {
     switch (callStatus) {
-      case SipConstants.SESSION_ANSWERED:
+      case CallState.Connected:
         setAppTitle("Conference");
         setSubmitTitle("Update");
         setCancelTitle("Hangup");
@@ -70,8 +82,8 @@ export const JoinConference = ({
         setIsLoading(false);
         configureConferenceSession();
         break;
-      case SipConstants.SESSION_ENDED:
-      case SipConstants.SESSION_FAILED:
+      case CallState.Ended:
+      case CallState.Idle:
         setIsLoading(false);
         deleteConferenceSettings();
         break;
@@ -80,7 +92,7 @@ export const JoinConference = ({
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (callStatus !== SipConstants.SESSION_ANSWERED) {
+    if (callStatus !== CallState.Connected) {
       call(conferenceName);
       if (!callSid) {
         setIsLoading(true);
@@ -145,7 +157,7 @@ export const JoinConference = ({
         </Text>
         {callDuration > 0 && (
           <Text fontSize="15px">
-            {new Date(callDuration * 1000).toISOString().substr(11, 8)}
+            {new Date(callDuration * 1000).toISOString().substring(11, 19)}
           </Text>
         )}
         <FormControl id="conference_name">
@@ -163,12 +175,7 @@ export const JoinConference = ({
         <OutlineBox title={participantState}>
           <RadioGroup
             onChange={(e) => {
-              setMode(e as ConferenceModes);
-              saveConferenceSettings({
-                mode: e as ConferenceModes,
-                speakOnlyTo,
-                tags,
-              });
+              updateSettings({ mode: e as ConferenceModes });
             }}
             value={mode}
             colorScheme="jambonz"
@@ -189,12 +196,7 @@ export const JoinConference = ({
               placeholder="tag"
               value={speakOnlyTo}
               onChange={(e) => {
-                setSpeakOnlyTo(e.target.value);
-                saveConferenceSettings({
-                  mode,
-                  speakOnlyTo: e.target.value,
-                  tags,
-                });
+                updateSettings({ speakOnlyTo: e.target.value });
               }}
               disabled={mode !== "coach"}
               required={mode === "coach"}
@@ -208,12 +210,7 @@ export const JoinConference = ({
               placeholder="tag"
               value={tags}
               onChange={(e) => {
-                setTags(e.target.value);
-                saveConferenceSettings({
-                  mode,
-                  speakOnlyTo,
-                  tags: e.target.value,
-                });
+                updateSettings({ tags: e.target.value });
               }}
             />
           </FormControl>
